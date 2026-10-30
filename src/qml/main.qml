@@ -52,6 +52,10 @@ ApplicationWindow {
     // Which top corner holds the floating settings button. Put it on the
     // passenger side, away from the AA navigation rail (driver side).
     property string floatingSettingsCorner: "right"
+    // White gear on the dark theme, dark gear on the light theme.
+    readonly property url settingsIconSource: theme.currentMode === "LIGHT"
+        ? "qrc:/qml/assets/icon-settings-material-dark.svg"
+        : "qrc:/qml/assets/icon-settings-material.svg"
 
     // Theme Manager - centralized theme control
     ThemeManager {
@@ -385,13 +389,16 @@ ApplicationWindow {
                             Layout.preferredWidth: theme.dimensions.recommendedTouchTarget
                             Layout.preferredHeight: theme.dimensions.recommendedTouchTarget
 
-                            contentItem: Text {
-                                text: iconFonts.loadedFamily !== "" ? iconFonts.settingsGlyph : "\u2699"
-                                color: theme.colors.textPrimary
-                                font.family: iconFonts.loadedFamily !== "" ? iconFonts.family : theme.typography.fontFamily
-                                font.pixelSize: 24
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                            // Bundled SVG: no "Material Icons" font exists on the device,
+                            // so the old font glyph rendered as an empty box.
+                            contentItem: Item {
+                                Image {
+                                    anchors.centerIn: parent
+                                    width: 24
+                                    height: 24
+                                    sourceSize: Qt.size(48, 48)
+                                    source: root.settingsIconSource
+                                }
                             }
 
                             ToolTip.visible: hovered
@@ -1244,12 +1251,12 @@ ApplicationWindow {
                 border.width: 1
             }
 
-            Text {
+            Image {
                 anchors.centerIn: parent
-                text: iconFonts.loadedFamily !== "" ? iconFonts.settingsGlyph : "⚙"
-                color: theme.colors.textPrimary
-                font.family: iconFonts.loadedFamily !== "" ? iconFonts.family : theme.typography.fontFamily
-                font.pixelSize: 24
+                width: 24
+                height: 24
+                sourceSize: Qt.size(48, 48)
+                source: root.settingsIconSource
             }
 
             MouseArea {
