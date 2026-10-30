@@ -133,7 +133,7 @@ Item {
 
         ColumnLayout {
             id: contentColumn
-            width: flick.width
+            width: flick.width - 16  // keep clear of the scrollbar
             spacing: 12
 
             Components.SettingsCard {
@@ -141,7 +141,7 @@ Item {
                 title: qsTr("Bluetooth Status", "SettingsPanel")
 
                 RowLayout {
-                    width: parent.width
+                    Layout.fillWidth: true
                     spacing: 10
 
                     Rectangle {
@@ -185,7 +185,7 @@ Item {
                 }
 
                 Label {
-                    width: parent.width
+                    Layout.fillWidth: true
                     text: root.bt && root.bt.hasConnectedAudioDevice
                           ? qsTr("Active device: %1", "SettingsPanel").arg(root.bt.connectedAudioName)
                           : qsTr("No device currently connected", "SettingsPanel")
@@ -195,7 +195,7 @@ Item {
                 }
 
                 Label {
-                    width: parent.width
+                    Layout.fillWidth: true
                     visible: !(!!root.bt && root.bt.btEnabled)
                     text: qsTr("Bluetooth is currently disabled at system level. Enable Bluetooth from system settings to manage pairing and audio routing here.", "SettingsPanel")
                     font.pointSize: 11
@@ -212,14 +212,14 @@ Item {
 
                 ComboBox {
                     id: pairedDeviceCombo
-                    width: parent.width
+                    Layout.fillWidth: true
                     model: root.bt ? root.bt.pairedAudioDevices : []
                     textRole: "name"
                     valueRole: "address"
                 }
 
                 RowLayout {
-                    width: parent.width
+                    Layout.fillWidth: true
                     spacing: 8
 
                     Button {
@@ -263,7 +263,7 @@ Item {
                 enabled: visible
 
                 RowLayout {
-                    width: parent.width
+                    Layout.fillWidth: true
                     spacing: 8
 
                     Button {
@@ -311,7 +311,7 @@ Item {
                 }
 
                 Rectangle {
-                    width: parent.width
+                    Layout.fillWidth: true
                     height: 150
                     radius: 8
                       color: root.Material.theme === Material.Dark
@@ -395,7 +395,7 @@ Item {
                 }
 
                 RowLayout {
-                    width: parent.width
+                    Layout.fillWidth: true
                     spacing: 8
 
                     Label {
@@ -425,7 +425,7 @@ Item {
                 title: qsTr("Status", "SettingsPanel")
 
                 Label {
-                    width: parent.width
+                    Layout.fillWidth: true
                     text: root.bt ? root.bt.statusMessage : ""
                     font.pointSize: 11
                     visible: text !== ""
@@ -433,7 +433,7 @@ Item {
                 }
 
                 Label {
-                    width: parent.width
+                    Layout.fillWidth: true
                     text: root.bt ? root.bt.lastError : ""
                     font.pointSize: 11
                     color: Material.color(Material.Red)

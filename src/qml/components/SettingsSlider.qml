@@ -19,6 +19,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 /**
@@ -44,9 +45,12 @@ ColumnLayout {
     
     Label {
         id: labelText
+        Layout.fillWidth: true
         visible: text !== ""
-        font.pointSize: 12
-        font.bold: true
+        color: settingsSlider.Material.foreground
+        opacity: 0.75
+        font.pointSize: 10
+        wrapMode: Text.WordWrap
     }
     
     RowLayout {
@@ -69,8 +73,12 @@ ColumnLayout {
         
         Label {
             text: settingsSlider.value + settingsSlider.valueSuffix
-            font.pointSize: 11
-            Layout.minimumWidth: 40
+            // Explicit theme colour: the inherited default rendered black on
+            // the dark settings panel.
+            color: settingsSlider.Material.foreground
+            font.pointSize: 13
+            font.bold: true
+            Layout.minimumWidth: 52
             horizontalAlignment: Text.AlignRight
         }
     }

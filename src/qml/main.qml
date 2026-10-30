@@ -1202,10 +1202,16 @@ ApplicationWindow {
         // corner never opens settings while driving.
         Item {
             id: floatingSettings
-            readonly property bool wanted:
+            readonly property bool overProjection:
                 (root.compactLayout || root.immersiveProjectionMode) &&
-                navigationController.currentViewState === navigationController.viewStateAAProjection &&
-                !navigationController.settingsPanelVisible
+                navigationController.currentViewState === navigationController.viewStateAAProjection
+            // The waiting screen had no route to Settings at all, so the USB /
+            // Wireless choice was unreachable before the first connection.
+            readonly property bool overStatusScreen:
+                navigationController.currentViewState === navigationController.viewStateConnectionStatus ||
+                navigationController.currentViewState === navigationController.viewStateLoading
+            readonly property bool wanted:
+                (overProjection || overStatusScreen) && !navigationController.settingsPanelVisible
             property bool awake: true
 
             visible: wanted
@@ -1217,7 +1223,8 @@ ApplicationWindow {
             x: root.floatingSettingsCorner === "left"
                ? theme.spacing.small
                : parent.width - width - theme.spacing.small
-            opacity: awake ? 0.95 : 0.3
+            // Only dim over the Android Auto picture; on the waiting screen it stays visible.
+            opacity: (awake || !overProjection) ? 0.95 : 0.3
 
             Behavior on opacity {
                 NumberAnimation { duration: theme.animation.normal }
@@ -1263,7 +1270,7 @@ ApplicationWindow {
                 id: floatingSettingsArea
                 anchors.fill: parent
                 onClicked: {
-                    if (!floatingSettings.awake) {
+                    if (floatingSettings.overProjection && !floatingSettings.awake) {
                         floatingSettings.wake()
                         return
                     }

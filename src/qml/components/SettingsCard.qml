@@ -6,6 +6,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtQuick.Layouts
 
 Rectangle {
     id: card
@@ -19,20 +20,27 @@ Rectangle {
     border.width: 1
     border.color: isDarkTheme ? Qt.rgba(1, 1, 1, 0.09) : Qt.rgba(0, 0, 0, 0.16)
 
-    implicitHeight: contentColumn.implicitHeight + 20
+    implicitHeight: contentColumn.implicitHeight + 24
 
-    Column {
+    // ColumnLayout (not Column) so children's Layout.fillWidth is honoured:
+    // with a plain Column, sliders collapsed to ~160px and wide toggles
+    // overflowed the card on small (800x480) screens.
+    ColumnLayout {
         id: contentColumn
-        anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 12
+        spacing: 8
 
         Label {
+            Layout.fillWidth: true
             text: card.title
             visible: text !== ""
             font.pointSize: 12
             font.bold: true
             color: card.Material.foreground
+            elide: Text.ElideRight
         }
     }
 }

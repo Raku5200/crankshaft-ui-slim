@@ -16,11 +16,14 @@ Dialog {
     id: settingsPanel
     property int displayRotation: 0
     readonly property bool isQuarterTurn: displayRotation === 90 || displayRotation === 270
-    readonly property int contentMargin: isQuarterTurn ? 12 : 18
-    readonly property int sectionSpacing: isQuarterTurn ? 8 : 12
-    readonly property int headerTitleSize: isQuarterTurn ? 16 : 18
-    readonly property int tabFontSize: isQuarterTurn ? 10 : 11
-    readonly property int panelInnerMargin: isQuarterTurn ? 10 : 14
+    // Short screens (e.g. 800x480): use almost the whole display and keep the
+    // chrome (title, tabs, close) to one compact band so settings have room.
+    readonly property bool compact: !isQuarterTurn && parent && parent.height <= 600
+    readonly property int contentMargin: (isQuarterTurn || compact) ? 12 : 18
+    readonly property int sectionSpacing: (isQuarterTurn || compact) ? 8 : 12
+    readonly property int headerTitleSize: (isQuarterTurn || compact) ? 16 : 18
+    readonly property int tabFontSize: isQuarterTurn ? 10 : (compact ? 12 : 11)
+    readonly property int panelInnerMargin: (isQuarterTurn || compact) ? 10 : 14
     title: ""
     modal: true
     parent: Overlay.overlay
@@ -28,16 +31,22 @@ Dialog {
     // Keep content proportions readable after rotating the dialog content.
     width: isQuarterTurn
            ? Math.min(460, parent.width * 0.94)
-           : Math.min(760, parent.width * 0.96)
+           : (compact ? parent.width - 16 : Math.min(760, parent.width * 0.96))
     height: isQuarterTurn
             ? Math.min(760, parent.height * 0.96)
-            : Math.min(460, parent.height * 0.94)
+            : (compact ? parent.height - 16 : Math.min(460, parent.height * 0.94))
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
     padding: 0
     z: 1000
 
     standardButtons: Dialog.NoButton
+
+    // Dark scrim behind the panel (the default Material dim showed as a light
+    // grey frame around the dark panel).
+    Overlay.modal: Rectangle {
+        color: Qt.rgba(0, 0, 0, 0.6)
+    }
 
     background: Rectangle {
         radius: settingsPanel.isQuarterTurn ? 12 : 16
@@ -87,15 +96,12 @@ Dialog {
                         Layout.fillWidth: true
                     }
 
-                    Label {
-                        text: qsTr("Slim UI", "SettingsPanel")
-                        font.pointSize: settingsPanel.isQuarterTurn ? 9 : 10
-                        opacity: 0.7
-                    }
-
                     Button {
-                        visible: settingsPanel.isQuarterTurn
+                        visible: settingsPanel.isQuarterTurn || settingsPanel.compact
                         text: qsTr("Close", "SettingsPanel")
+                        flat: true
+                        font.pointSize: 12
+                        Layout.preferredHeight: 44
                         onClicked: settingsPanel.close()
                     }
                 }
@@ -165,7 +171,7 @@ Dialog {
                 }
 
                 RowLayout {
-                    visible: !settingsPanel.isQuarterTurn
+                    visible: !settingsPanel.isQuarterTurn && !settingsPanel.compact
                     Layout.fillWidth: true
                     Item { Layout.fillWidth: true }
 

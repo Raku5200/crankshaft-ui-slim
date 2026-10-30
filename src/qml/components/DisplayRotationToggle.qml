@@ -37,6 +37,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("0", "DisplayRotationToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: rotationGroup
             checked: rotationToggle.currentRotation === 0
@@ -52,6 +53,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("90", "DisplayRotationToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: rotationGroup
             checked: rotationToggle.currentRotation === 90
@@ -67,6 +69,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("180", "DisplayRotationToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: rotationGroup
             checked: rotationToggle.currentRotation === 180
@@ -82,6 +85,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("270", "DisplayRotationToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: rotationGroup
             checked: rotationToggle.currentRotation === 270

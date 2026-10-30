@@ -59,6 +59,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("USB", "ConnectionPreferenceToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: connectionPreferenceGroup
             checked: connectionToggle.currentPreference === "USB"
@@ -74,6 +75,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("Wireless", "ConnectionPreferenceToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: connectionPreferenceGroup
             checked: connectionToggle.currentPreference === "WIRELESS"

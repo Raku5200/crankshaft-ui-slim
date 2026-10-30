@@ -16,12 +16,24 @@ Item {
     readonly property var prefs: root.preferencesFacade
 
     ScrollView {
+        id: scrollView
         anchors.fill: parent
         clip: true
+        // Vertical scrolling only: content always matches the visible width
+        // (it used to grow to the widest card and run off the right edge).
+        contentWidth: availableWidth
+        rightPadding: 16
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
         ScrollBar.vertical: ScrollBar {
+            // A custom scrollbar must be positioned explicitly, otherwise it
+            // sits at the top-left corner of the view.
+            parent: scrollView
+            x: scrollView.width - width
+            y: scrollView.topPadding
+            height: scrollView.availableHeight
             policy: ScrollBar.AlwaysOn
-            width: 12
+            width: 10
             minimumSize: 0.2
 
             contentItem: Rectangle {
@@ -38,7 +50,9 @@ Item {
         }
 
         ColumnLayout {
-            width: availableWidth
+            // Qualified: an unqualified 'availableWidth' resolved to the
+            // settings Dialog's width (784px) instead of this view's (724px).
+            width: scrollView.availableWidth
             spacing: 12
 
             Components.SettingsCard {

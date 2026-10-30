@@ -59,6 +59,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("Light", "ThemeToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: themeToggleGroup
             checked: themeToggle.currentMode === "LIGHT"
@@ -74,6 +75,7 @@ ColumnLayout {
         SegmentedOptionButton {
             baseText: qsTr("Dark", "ThemeToggle")
             Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
             Layout.preferredHeight: 46
             ButtonGroup.group: themeToggleGroup
             checked: themeToggle.currentMode === "DARK"

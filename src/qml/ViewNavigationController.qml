@@ -79,8 +79,12 @@ QtObject {
      */
     function showSettings() {
         settingsPanelVisible = true
-        currentViewState = viewStateSettings
-        videoRenderingEnabled = false  // Pause GPU rendering while overlay open
+        // From the waiting screen the panel simply overlays it (the view
+        // underneath stays the same); from projection we enter Settings state.
+        if (currentViewState === viewStateAAProjection) {
+            currentViewState = viewStateSettings
+            videoRenderingEnabled = false  // Pause GPU rendering while overlay open
+        }
         
         // AA service continues running in background
         if (aaServiceRunning) {
@@ -95,8 +99,10 @@ QtObject {
      */
     function closeSettings() {
         settingsPanelVisible = false
-        currentViewState = viewStateAAProjection
-        videoRenderingEnabled = true  // Resume GPU rendering
+        if (currentViewState === viewStateSettings) {
+            currentViewState = viewStateAAProjection
+            videoRenderingEnabled = true  // Resume GPU rendering
+        }
     }
     
     /**
@@ -123,7 +129,7 @@ QtObject {
     function toggleSettings() {
         if (settingsPanelVisible) {
             closeSettings()
-        } else if (currentViewState === viewStateAAProjection) {
+        } else if (canOpenSettings()) {
             showSettings()
         }
     }
@@ -157,6 +163,9 @@ QtObject {
      * Check if settings can be opened
      */
     function canOpenSettings() {
-        return currentViewState === viewStateAAProjection || currentViewState === viewStateSettings
+        // Settings must be reachable before the first connection too, otherwise
+        // the USB / Wireless choice can't be made on a fresh install.
+        return currentViewState === viewStateAAProjection || currentViewState === viewStateSettings ||
+               currentViewState === viewStateConnectionStatus || currentViewState === viewStateLoading
     }
 }
