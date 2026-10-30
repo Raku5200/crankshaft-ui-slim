@@ -44,7 +44,15 @@ ApplicationWindow {
         root.visibility === Window.FullScreen &&
         navigationController.currentViewState === navigationController.viewStateAAProjection &&
         !navigationController.settingsPanelVisible
-    
+
+    // Small panels (e.g. 800x480 / 1024x600): the 64px toolbar and frame margins
+    // would shrink and letterbox the AA stream, so in compact layout projection
+    // uses the whole screen and settings move to a floating button.
+    readonly property bool compactLayout: Math.min(mainContent.width, mainContent.height) <= 600
+    // Which top corner holds the floating settings button. Put it on the
+    // passenger side, away from the AA navigation rail (driver side).
+    property string floatingSettingsCorner: "right"
+
     // Theme Manager - centralized theme control
     ThemeManager {
         id: theme
@@ -346,7 +354,7 @@ ApplicationWindow {
                 
                 // Toolbar
                 Rectangle {
-                    visible: !root.immersiveProjectionMode
+                    visible: !root.immersiveProjectionMode && !root.compactLayout
                     Layout.fillWidth: true
                     Layout.preferredHeight: visible ? theme.dimensions.toolbarHeight : 0
                     height: visible ? theme.dimensions.toolbarHeight : 0
@@ -818,7 +826,7 @@ ApplicationWindow {
                     Loader {
                         id: projectionVideoLoader
                         anchors.fill: parent
-                        anchors.margins: root.immersiveProjectionMode ? 0 : theme.spacing.small
+                        anchors.margins: (root.immersiveProjectionMode || root.compactLayout) ? 0 : theme.spacing.small
                         active: projectionSurface.webRtcActive
                         source: "qrc:/qml/components/WebRtcVideoOutput.qml"
 
@@ -872,7 +880,7 @@ ApplicationWindow {
                     Image {
                         id: projectionImage
                         anchors.fill: parent
-                        anchors.margins: root.immersiveProjectionMode ? 0 : theme.spacing.small
+                        anchors.margins: (root.immersiveProjectionMode || root.compactLayout) ? 0 : theme.spacing.small
                         fillMode: Image.PreserveAspectFit
                         // The fallback image is already decoded to a small AA frame.
                         // Avoid Qt Quick filtering on the RPi3 render path; this reduces
@@ -1179,7 +1187,85 @@ ApplicationWindow {
                 }
             }
         }
-        
+
+        // Floating settings button, shown whenever the toolbar is hidden during
+        // projection (compact layout or immersive fullscreen) so settings always
+        // stay reachable. It dims after a few seconds to keep the AA picture clear;
+        // a tap on the dimmed button only wakes it, so a stray touch in that
+        // corner never opens settings while driving.
+        Item {
+            id: floatingSettings
+            readonly property bool wanted:
+                (root.compactLayout || root.immersiveProjectionMode) &&
+                navigationController.currentViewState === navigationController.viewStateAAProjection &&
+                !navigationController.settingsPanelVisible
+            property bool awake: true
+
+            visible: wanted
+            z: 10
+            width: theme.dimensions.minTouchTarget + theme.spacing.tiny
+            height: width
+            anchors.top: parent.top
+            anchors.topMargin: theme.spacing.small
+            x: root.floatingSettingsCorner === "left"
+               ? theme.spacing.small
+               : parent.width - width - theme.spacing.small
+            opacity: awake ? 0.95 : 0.3
+
+            Behavior on opacity {
+                NumberAnimation { duration: theme.animation.normal }
+            }
+
+            function wake() {
+                awake = true
+                dimTimer.restart()
+            }
+
+            onWantedChanged: {
+                if (wanted) {
+                    wake()
+                } else {
+                    dimTimer.stop()
+                }
+            }
+
+            Timer {
+                id: dimTimer
+                interval: 4000
+                repeat: false
+                onTriggered: floatingSettings.awake = false
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                radius: width / 2
+                color: floatingSettingsArea.pressed ? theme.colors.primaryVariant : theme.colors.surface
+                border.color: theme.colors.border
+                border.width: 1
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: iconFonts.loadedFamily !== "" ? iconFonts.settingsGlyph : "⚙"
+                color: theme.colors.textPrimary
+                font.family: iconFonts.loadedFamily !== "" ? iconFonts.family : theme.typography.fontFamily
+                font.pixelSize: 24
+            }
+
+            MouseArea {
+                id: floatingSettingsArea
+                anchors.fill: parent
+                onClicked: {
+                    if (!floatingSettings.awake) {
+                        floatingSettings.wake()
+                        return
+                    }
+                    dimTimer.stop()
+                    navigationController.toggleSettings()
+                }
+            }
+        }
+
         // Settings Panel Overlay (T054-T055)
         SettingsPanel {
             id: settingsPanel

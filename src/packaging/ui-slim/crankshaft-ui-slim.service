@@ -82,7 +82,11 @@ ProtectControlGroups=true
 
 # Resource limits
 MemoryMax=200M
-CPUQuota=80%
+# CPUQuota is a percentage of ONE core: the previous 80% capped the UI below a
+# single core, which on a 4-core Pi Zero 2 W / Pi 3 throttled QML start-up and
+# H.264 decode. Use a relative weight instead so the UI gets full CPU when free
+# but still yields fairly to crankshaft-core under contention.
+CPUWeight=100
 
 # Watchdog enabled: ui-slim sends READY=1 and periodic WATCHDOG=1 heartbeats.
 WatchdogSec=30
