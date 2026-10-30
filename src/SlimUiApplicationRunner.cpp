@@ -51,6 +51,8 @@
 #include "ErrorHandler.h"
 #include "Logger.h"
 #include "PreferencesFacade.h"
+#include <QJsonObject>
+#include "CoreClient.h"
 #include "ServiceProvider.h"
 #include "TouchEventForwarder.h"
 
@@ -204,6 +206,23 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
 
         PreferencesFacade preferencesFacade(&services);
         ErrorHandler errorHandler;
+
+        // Tell core whether to look for the phone over USB or wireless: on every
+        // (re)connection to core, and whenever the user changes the preference.
+        if (CoreClient* coreClient = services.androidAutoService()) {
+            const auto publishConnectionMode = [coreClient, &preferencesFacade]() {
+                coreClient->publish(
+                    QStringLiteral("android-auto/connection-mode"),
+                    QJsonObject{{QStringLiteral("mode"),
+                                 preferencesFacade.connectionPreference().toLower()}});
+            };
+            QObject::connect(coreClient, &CoreClient::coreConnected, &preferencesFacade,
+                             publishConnectionMode);
+            QObject::connect(&preferencesFacade, &PreferencesFacade::connectionPreferenceChanged,
+                             coreClient, [publishConnectionMode](const QString&) {
+                                 publishConnectionMode();
+                             });
+        }
 
         if (!audioBridge.initialize()) {
             Logger::instance().warningContext(

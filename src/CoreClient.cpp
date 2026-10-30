@@ -504,6 +504,7 @@ void CoreClient::onWebSocketConnected() {
     }
     m_clientHelloSent = false;
     sendClientHello();
+    emit coreConnected();
     subscribeToTopics();
 }
 

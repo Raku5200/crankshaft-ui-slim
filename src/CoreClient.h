@@ -66,6 +66,8 @@ public:
 
 signals:
     void connectionStateChanged(int state);
+    // Emitted each time the WebSocket link to crankshaft-core is (re)established.
+    void coreConnected();
     void bluetoothEventReceived(const QString& topic, const QVariantMap& payload);
     void deviceDiscovered(const QVariantMap& device);
     void deviceRemoved(const QString& deviceId);
