@@ -52,8 +52,13 @@ constexpr const char* kSoftwareDecoderElementName = "avdec_h264";
 }
 
 [[nodiscard]] bool yuvOutputRequested() {
+    // BGRA is the default: it is a single RGBA texture, which every GLES2
+    // driver can sample. YUV needs single-channel (R8) textures per plane,
+    // which the Pi's VC4 GLES2 driver does not offer, so it showed no picture
+    // there. Opt in with SLIM_UI_VIDEO_FORMAT=yuv on GPUs that support it.
     const QString value = qEnvironmentVariable("SLIM_UI_VIDEO_FORMAT").trimmed().toLower();
-    return value != QStringLiteral("bgra") && value != QStringLiteral("rgb");
+    return value == QStringLiteral("yuv") || value == QStringLiteral("i420") ||
+           value == QStringLiteral("nv12");
 }
 
 [[nodiscard]] bool gstElementFactoryExists(const char* factoryName) {
@@ -557,21 +562,33 @@ auto H264VideoDecoder::handleSample(GstSample* sample) -> GstFlowReturn {
         return GST_FLOW_ERROR;
     }
 
+    // Copy straight into the QVideoFrame the sink displays (one copy per
+    // frame; the old QImage step added a second full-frame copy).
     const qint64 conversionStartNs = monotonicNs();
-    QImage image(width, height, QImage::Format_ARGB32);
-    for (int y = 0; y < height; ++y) {
-        std::memcpy(image.scanLine(y), map.data + (y * sourceStride),
-                    static_cast<size_t>(rowBytes));
+    QVideoFrame frame(QVideoFrameFormat(QSize(width, height), QVideoFrameFormat::Format_BGRA8888));
+    if (!frame.isValid() || !frame.map(QVideoFrame::WriteOnly)) {
+        gst_buffer_unmap(buffer, &map);
+        return GST_FLOW_ERROR;
     }
+    const int dstStride = frame.bytesPerLine(0);
+    const int copyBytes = std::min(rowBytes, dstStride);
+    if (dstStride == sourceStride && copyBytes == sourceStride) {
+        std::memcpy(frame.bits(0), map.data, static_cast<size_t>(sourceStride) * height);
+    } else {
+        for (int y = 0; y < height; ++y) {
+            std::memcpy(frame.bits(0) + (y * dstStride), map.data + (y * sourceStride),
+                        static_cast<size_t>(copyBytes));
+        }
+    }
+    frame.unmap();
     const qint64 conversionElapsedUs = (monotonicNs() - conversionStartNs) / 1000;
     ++m_conversionTimingSampleCount;
     if (m_conversionTimingSampleCount == 1 ||
         (m_conversionTimingSampleCount % 30) == 0) {
         Logger::instance().infoContext(
-            "H264VideoDecoder", "Decoded BGRA to QImage conversion timing",
+            "H264VideoDecoder", "Decoded BGRA frame copy timing",
             {{"count", static_cast<qulonglong>(m_conversionTimingSampleCount)},
              {"elapsed_us", conversionElapsedUs},
-             {"elapsed_ms", conversionElapsedUs / 1000.0},
              {"width", width},
              {"height", height},
              {"source_stride", sourceStride},
@@ -579,7 +596,7 @@ auto H264VideoDecoder::handleSample(GstSample* sample) -> GstFlowReturn {
     }
 
     gst_buffer_unmap(buffer, &map);
-    emit frameReady(image, width, height);
+    emit videoFrameReady(frame);
     return GST_FLOW_OK;
 }
 

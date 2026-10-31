@@ -613,7 +613,7 @@ auto AndroidAutoFacade::setupEventBusConnections() -> void {
                 if (!m_loggedFirstDecodedH264Frame) {
                     m_loggedFirstDecodedH264Frame = true;
                     Logger::instance().infoContext("AndroidAutoFacade",
-                                                   "First H.264 frame decoded (YUV)");
+                                                   "First H.264 frame decoded");
                 }
                 m_h264Renderer->presentFrame(frame);
             });
