@@ -252,6 +252,11 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
         engine.rootContext()->setContextProperty("_preferencesFacade", &preferencesFacade);
         engine.rootContext()->setContextProperty("_errorHandler", &errorHandler);
         engine.rootContext()->setContextProperty("_touchDebugEnabled", touchDebugMode);
+        // MK4-navigation-style menu is on by default; CRANKSHAFT_UI_STYLE=classic turns it off.
+        engine.rootContext()->setContextProperty(
+            "_mk4Enabled",
+            qEnvironmentVariable("CRANKSHAFT_UI_STYLE").compare(QStringLiteral("classic"),
+                                                               Qt::CaseInsensitive) != 0);
 
         if (touchDebugMode) {
             Logger::instance().infoContext(

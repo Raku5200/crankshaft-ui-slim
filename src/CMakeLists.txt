@@ -230,6 +230,19 @@ qt_add_resources(crankshaft-ui-slim "qml"
         qml/settings/BluetoothSettingsTab.qml
         qml/assets/icon-settings-material.svg
         qml/assets/icon-settings-material-dark.svg
+        qml/mk4/qmldir
+        qml/mk4/Mk4.qml
+        qml/mk4/Mk4Bar.qml
+        qml/mk4/Mk4Screen.qml
+        qml/mk4/Mk4Group.qml
+        qml/mk4/Mk4Item.qml
+        qml/mk4/Mk4InfoBar.qml
+        qml/mk4/Mk4Shell.qml
+        qml/mk4/MockIbus.qml
+        qml/mk4/MenuScreen.qml
+        qml/mk4/ComputerScreen.qml
+        qml/mk4/VehicleScreen.qml
+        qml/mk4/SettingsScreen.qml
 )
 
 # Translation support

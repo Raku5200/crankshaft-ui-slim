@@ -24,6 +24,7 @@ import QtQuick.Layouts
 import QtMultimedia
 import QtQuick.Window
 import "components"
+import "mk4" as Mk4
 
 ApplicationWindow {
     id: root
@@ -56,6 +57,19 @@ ApplicationWindow {
     readonly property url settingsIconSource: theme.currentMode === "LIGHT"
         ? "qrc:/qml/assets/icon-settings-material-dark.svg"
         : "qrc:/qml/assets/icon-settings-material.svg"
+
+    // MK4-navigation-style native menu (main menu, on-board computer, vehicle
+    // data) on top of Android Auto. Disable with CRANKSHAFT_UI_STYLE=classic.
+    readonly property bool mk4Enabled: typeof _mk4Enabled === "undefined" || _mk4Enabled === true
+    readonly property bool mk4InfoBarVisible:
+        root.mk4Enabled && mk4Shell.infoBar && !mk4Shell.visible &&
+        navigationController.currentViewState === navigationController.viewStateAAProjection &&
+        !navigationController.settingsPanelVisible
+
+    // Placeholder vehicle data until the IBus interface is connected.
+    Mk4.MockIbus {
+        id: ibusData
+    }
 
     // Theme Manager - centralized theme control
     ThemeManager {
@@ -1211,7 +1225,8 @@ ApplicationWindow {
                 navigationController.currentViewState === navigationController.viewStateConnectionStatus ||
                 navigationController.currentViewState === navigationController.viewStateLoading
             readonly property bool wanted:
-                (overProjection || overStatusScreen) && !navigationController.settingsPanelVisible
+                (overProjection || overStatusScreen) && !navigationController.settingsPanelVisible &&
+                !mk4Shell.visible && !root.mk4InfoBarVisible
             property bool awake: true
 
             visible: wanted
@@ -1259,11 +1274,21 @@ ApplicationWindow {
             }
 
             Image {
+                visible: !root.mk4Enabled
                 anchors.centerIn: parent
                 width: 24
                 height: 24
                 sourceSize: Qt.size(48, 48)
                 source: root.settingsIconSource
+            }
+
+            Text {
+                visible: root.mk4Enabled
+                anchors.centerIn: parent
+                text: "MENU"
+                color: theme.colors.textPrimary
+                font.pixelSize: 12
+                font.bold: true
             }
 
             MouseArea {
@@ -1275,7 +1300,36 @@ ApplicationWindow {
                         return
                     }
                     dimTimer.stop()
-                    navigationController.toggleSettings()
+                    if (root.mk4Enabled) {
+                        mk4Shell.open()
+                    } else {
+                        navigationController.toggleSettings()
+                    }
+                }
+            }
+        }
+
+        Mk4.Mk4InfoBar {
+            visible: root.mk4InfoBarVisible
+            z: 10
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            ibus: ibusData
+            onMenuRequested: mk4Shell.open()
+        }
+
+        Mk4.Mk4Shell {
+            id: mk4Shell
+            objectName: "mk4ShellObj"
+            anchors.fill: parent
+            z: 20
+            ibus: ibusData
+            onCloseRequested: visible = false
+            onOpenCrankshaftSettings: {
+                visible = false
+                if (navigationController.canOpenSettings()) {
+                    navigationController.showSettings()
                 }
             }
         }

@@ -134,9 +134,11 @@ Item {
                 Label {
                     id: modeLabel
                     anchors.centerIn: parent
-                    text: statusView.wirelessMode
-                          ? qsTr("Wireless mode \u00b7 change with \u2699 Settings \u203a Connection")
-                          : qsTr("USB mode \u00b7 change with \u2699 Settings \u203a Connection")
+                    readonly property string route: (typeof _mk4Enabled === "undefined" || _mk4Enabled === true)
+                        ? qsTr("MENU \u203a Settings \u203a Crankshaft settings")
+                        : qsTr("\u2699 Settings \u203a Connection")
+                    text: (statusView.wirelessMode ? qsTr("Wireless mode") : qsTr("USB mode"))
+                          + " \u00b7 " + qsTr("change with %1").arg(route)
                     font.pixelSize: palette.fontSizeBody - 2
                     color: palette.textPrimaryColor
                 }
