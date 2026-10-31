@@ -26,7 +26,11 @@ Type=notify
 NotifyAccess=main
 User=crankshaft
 Group=crankshaft
-ExecStartPre=/bin/sh -c 'for i in $(seq 1 40); do nc -z 127.0.0.1 8080 && exit 0; sleep 0.25; done; exit 1'
+# Wait for crankshaft-core's WebSocket. On a Pi Zero 2 W core can take well
+# over 10s to come up on a cold boot; the old 10s limit made this unit fail
+# and only start 5s later on the restart. Allow up to 60s.
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 240); do nc -z 127.0.0.1 8080 && exit 0; sleep 0.25; done; exit 1'
+TimeoutStartSec=120
 ExecStart=/usr/bin/crankshaft-ui-slim
 Restart=on-failure
 RestartSec=5

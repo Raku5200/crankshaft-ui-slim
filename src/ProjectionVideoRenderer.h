@@ -21,6 +21,7 @@
 
 #include <QImage>
 #include <QObject>
+#include <QVideoFrame>
 
 class ProjectionVideoRenderer : public QObject {
 public:
@@ -29,5 +30,7 @@ public:
 
     [[nodiscard]] virtual auto surfaceObject() const -> QObject* = 0;
     virtual auto presentImage(const QImage& image) -> void = 0;
+    /// Present an already-built frame (e.g. YUV straight from the decoder).
+    virtual auto presentFrame(const QVideoFrame& frame) -> void { Q_UNUSED(frame); }
     virtual auto clear() -> void = 0;
 };

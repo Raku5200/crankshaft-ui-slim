@@ -51,6 +51,11 @@ constexpr const char* kSoftwareDecoderElementName = "avdec_h264";
     return QStringLiteral("auto");
 }
 
+[[nodiscard]] bool yuvOutputRequested() {
+    const QString value = qEnvironmentVariable("SLIM_UI_VIDEO_FORMAT").trimmed().toLower();
+    return value != QStringLiteral("bgra") && value != QStringLiteral("rgb");
+}
+
 [[nodiscard]] bool gstElementFactoryExists(const char* factoryName) {
     GstElementFactory* factory = gst_element_factory_find(factoryName);
     if (!factory) {
@@ -221,9 +226,13 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
 
     g_object_set(G_OBJECT(m_h264parse), "config-interval", -1, nullptr);
 
-    GstCaps* sinkCaps = gst_caps_new_simple("video/x-raw",
-                                            "format", G_TYPE_STRING, "BGRA",
-                                            nullptr);
+    // In YUV mode the caps accept what the decoders produce natively
+    // (avdec_h264: I420, v4l2h264dec: NV12/I420), so videoconvert runs in
+    // passthrough and costs nothing.
+    m_yuvOutput = yuvOutputRequested();
+    GstCaps* sinkCaps = m_yuvOutput
+        ? gst_caps_from_string("video/x-raw,format=(string){I420,NV12}")
+        : gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "BGRA", nullptr);
     g_object_set(G_OBJECT(m_appsink),
                  "caps", sinkCaps,
                  "max-buffers", kMaxBuffers,
@@ -289,7 +298,8 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
          {"decoder", decoderElementName},
          {"hardware_accelerated", isHardwareDecoder},
          {"platform_model", m_platformModel},
-         {"output_caps", "video/x-raw,format=BGRA"}});
+         {"output_caps", m_yuvOutput ? "video/x-raw,format={I420,NV12}"
+                                     : "video/x-raw,format=BGRA"}});
     return true;
 }
 
@@ -514,14 +524,17 @@ auto H264VideoDecoder::handleSample(GstSample* sample) -> GstFlowReturn {
     GstBuffer* buffer = gst_sample_get_buffer(sample);
     if (!caps || !buffer) return GST_FLOW_ERROR;
 
-    GstMapInfo map{};
-    if (!gst_buffer_map(buffer, &map, GST_MAP_READ)) return GST_FLOW_ERROR;
-
     GstVideoInfo info;
     if (!gst_video_info_from_caps(&info, caps)) {
-        gst_buffer_unmap(buffer, &map);
         return GST_FLOW_ERROR;
     }
+    const GstVideoFormat sampleFormat = GST_VIDEO_INFO_FORMAT(&info);
+    if (sampleFormat == GST_VIDEO_FORMAT_I420 || sampleFormat == GST_VIDEO_FORMAT_NV12) {
+        return handleYuvSample(buffer, info);
+    }
+
+    GstMapInfo map{};
+    if (!gst_buffer_map(buffer, &map, GST_MAP_READ)) return GST_FLOW_ERROR;
 
     const int width = static_cast<int>(GST_VIDEO_INFO_WIDTH(&info));
     const int height = static_cast<int>(GST_VIDEO_INFO_HEIGHT(&info));
@@ -567,6 +580,68 @@ auto H264VideoDecoder::handleSample(GstSample* sample) -> GstFlowReturn {
 
     gst_buffer_unmap(buffer, &map);
     emit frameReady(image, width, height);
+    return GST_FLOW_OK;
+}
+
+auto H264VideoDecoder::handleYuvSample(GstBuffer* buffer, const GstVideoInfo& info)
+    -> GstFlowReturn {
+    const bool isNv12 = GST_VIDEO_INFO_FORMAT(&info) == GST_VIDEO_FORMAT_NV12;
+    const int width = static_cast<int>(GST_VIDEO_INFO_WIDTH(&info));
+    const int height = static_cast<int>(GST_VIDEO_INFO_HEIGHT(&info));
+
+    // gst_video_frame_map honours the decoder's real plane offsets/strides
+    // (v4l2 decoders pad them), unlike a plain buffer map.
+    GstVideoInfo mapInfo = info;
+    GstVideoFrame source;
+    if (!gst_video_frame_map(&source, &mapInfo, buffer, GST_MAP_READ)) {
+        return GST_FLOW_ERROR;
+    }
+
+    QVideoFrame frame(QVideoFrameFormat(
+        QSize(width, height),
+        isNv12 ? QVideoFrameFormat::Format_NV12 : QVideoFrameFormat::Format_YUV420P));
+    if (!frame.isValid() || !frame.map(QVideoFrame::WriteOnly)) {
+        gst_video_frame_unmap(&source);
+        return GST_FLOW_ERROR;
+    }
+
+    const qint64 copyStartNs = monotonicNs();
+    const int planes = std::min(static_cast<int>(GST_VIDEO_FRAME_N_PLANES(&source)),
+                                frame.planeCount());
+    for (int plane = 0; plane < planes; ++plane) {
+        const auto* src = static_cast<const uchar*>(GST_VIDEO_FRAME_PLANE_DATA(&source, plane));
+        const int srcStride = GST_VIDEO_FRAME_PLANE_STRIDE(&source, plane);
+        uchar* dst = frame.bits(plane);
+        const int dstStride = frame.bytesPerLine(plane);
+        const int rows = GST_VIDEO_FRAME_COMP_HEIGHT(&source, plane == 0 ? 0 : 1);
+        // Luma is one byte per pixel; I420 chroma planes are half width,
+        // NV12's interleaved UV plane is full width in bytes.
+        const int rowBytes = std::min({plane == 0 || isNv12 ? width : (width + 1) / 2,
+                                       srcStride, dstStride});
+        if (srcStride == dstStride && rowBytes == srcStride) {
+            std::memcpy(dst, src, static_cast<size_t>(srcStride) * static_cast<size_t>(rows));
+        } else {
+            for (int y = 0; y < rows; ++y) {
+                std::memcpy(dst + y * dstStride, src + y * srcStride,
+                            static_cast<size_t>(rowBytes));
+            }
+        }
+    }
+    frame.unmap();
+    gst_video_frame_unmap(&source);
+
+    ++m_sampleCount;
+    if (m_sampleCount == 1 || (m_sampleCount % 120) == 0) {
+        Logger::instance().infoContext(
+            "H264VideoDecoder", "Decoded YUV frame handed to QVideoSink",
+            {{"count", static_cast<qulonglong>(m_sampleCount)},
+             {"format", isNv12 ? "NV12" : "I420"},
+             {"width", width},
+             {"height", height},
+             {"copy_us", (monotonicNs() - copyStartNs) / 1000}});
+    }
+
+    emit videoFrameReady(frame);
     return GST_FLOW_OK;
 }
 

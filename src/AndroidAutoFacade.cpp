@@ -607,6 +607,16 @@ auto AndroidAutoFacade::setupEventBusConnections() -> void {
             &AndroidAutoFacade::onCoreH264VideoFrameReceived);
         connect(m_h264Decoder.get(), &H264VideoDecoder::frameReady, this,
             &AndroidAutoFacade::onDecodedH264Frame);
+        connect(m_h264Decoder.get(), &H264VideoDecoder::videoFrameReady, this,
+            [this](const QVideoFrame& frame) {
+                if (!m_h264Renderer) return;
+                if (!m_loggedFirstDecodedH264Frame) {
+                    m_loggedFirstDecodedH264Frame = true;
+                    Logger::instance().infoContext("AndroidAutoFacade",
+                                                   "First H.264 frame decoded (YUV)");
+                }
+                m_h264Renderer->presentFrame(frame);
+            });
         connect(m_h264Decoder.get(), &H264VideoDecoder::errorOccurred, this,
             [](const QString& error) {
                 Logger::instance().errorContext("AndroidAutoFacade",

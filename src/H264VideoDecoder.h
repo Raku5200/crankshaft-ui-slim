@@ -11,10 +11,12 @@
 #include <QObject>
 #include <QByteArray>
 #include <QImage>
+#include <QVideoFrame>
 #include <QString>
 #include <QHash>
 
 #include <gst/gst.h>
+#include <gst/video/video.h>
 
 class H264VideoDecoder final : public QObject {
     Q_OBJECT
@@ -28,6 +30,9 @@ public:
 
 signals:
     void frameReady(const QImage& image, int width, int height);
+    /// Decoded frame in the decoder's native YUV layout (I420 or NV12),
+    /// handed to QVideoSink as-is so the GPU does the colour conversion.
+    void videoFrameReady(const QVideoFrame& frame);
     void errorOccurred(const QString& error);
 
 private:
@@ -42,6 +47,7 @@ private:
     auto teardownPipeline() -> void;
     auto shutdown() -> void;
     auto handleSample(GstSample* sample) -> GstFlowReturn;
+    auto handleYuvSample(GstBuffer* buffer, const GstVideoInfo& info) -> GstFlowReturn;
     auto handleError(GError* error, const gchar* debug) -> void;
     // Probes for a usable hardware-accelerated V4L2 decoder element, trying
     // candidates in an order appropriate to the detected board (e.g. Pi5's
@@ -63,6 +69,10 @@ private:
     GstElement* m_appsink{nullptr};
     GstBus* m_bus{nullptr};
     bool m_initialised{false};
+    // YUV output (default): no CPU colour conversion and a third of the
+    // copying of the BGRA path. SLIM_UI_VIDEO_FORMAT=bgra restores the old
+    // CPU-converted path in case a GPU/driver cannot show YUV textures.
+    bool m_yuvOutput{true};
     // True when m_decodebin is a hardware-accelerated V4L2 stateful decoder
     // (v4l2h264dec, backed by the Pi's VideoCore/HEVC decode block) rather
     // than the avdec_h264 software fallback. Logged for diagnostics and used

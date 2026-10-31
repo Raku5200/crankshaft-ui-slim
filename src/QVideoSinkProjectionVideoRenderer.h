@@ -32,6 +32,7 @@ public:
     [[nodiscard]] auto surfaceObject() const -> QObject* override;
     auto setVideoSink(QVideoSink* videoSink) -> void;
     auto presentImage(const QImage& image) -> void override;
+    auto presentFrame(const QVideoFrame& frame) -> void override;
     auto clear() -> void override;
 
 private:

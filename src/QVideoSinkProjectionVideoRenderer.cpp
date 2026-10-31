@@ -21,6 +21,7 @@
 
 #include <QVideoFrameFormat>
 #include <QVideoFrame>
+#include <QPointer>
 
 #include "Logger.h"
 
@@ -159,6 +160,26 @@ auto QVideoSinkProjectionVideoRenderer::presentImage(const QImage& image) -> voi
                  reinterpret_cast<quintptr>(QThread::currentThread()))}});
     }
 
+}
+
+auto QVideoSinkProjectionVideoRenderer::presentFrame(const QVideoFrame& frame) -> void {
+    if (!frame.isValid()) {
+        clear();
+        return;
+    }
+    if (!m_videoSink) {
+        return;
+    }
+    ++m_presentCount;
+    // setVideoFrame must run on the sink's thread; this is called from the
+    // facade (GUI thread) so the queued call is normally a cheap hop.
+    QPointer<QVideoSink> sink = m_videoSink;
+    QMetaObject::invokeMethod(
+        m_videoSink,
+        [sink, frame]() {
+            if (sink) sink->setVideoFrame(frame);
+        },
+        Qt::QueuedConnection);
 }
 
 auto QVideoSinkProjectionVideoRenderer::clear() -> void {
