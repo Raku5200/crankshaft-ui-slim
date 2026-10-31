@@ -77,12 +77,24 @@ Dialog {
             anchors.margins: t.spacing.large
             spacing: t.spacing.medium
             
-            // Severity icon
-            Text {
+            // Severity icon: drawn badge (the device has no emoji font, so the
+            // old emoji glyphs rendered as an empty box).
+            Rectangle {
                 Layout.alignment: Qt.AlignVCenter
-                text: getSeverityIcon()
-                color: getSeverityColor()
-                font.pixelSize: 48
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: 44
+                radius: 22
+                color: "transparent"
+                border.width: 3
+                border.color: getSeverityColor()
+
+                Text {
+                    anchors.centerIn: parent
+                    text: getSeverityIcon()
+                    color: getSeverityColor()
+                    font.pixelSize: 26
+                    font.bold: true
+                }
             }
             
             // Title
@@ -208,11 +220,11 @@ Dialog {
     // Helper functions
     function getSeverityIcon() {
         switch (severity) {
-            case 0: return "ℹ️"  // Info
-            case 1: return "⚠️"  // Warning
-            case 2: return "❌"  // Error
-            case 3: return "🛑"  // Critical
-            default: return "❓"
+            case 0: return "i"  // Info
+            case 1: return "!"  // Warning
+            case 2: return "!"  // Error
+            case 3: return "!"  // Critical
+            default: return "?"
         }
     }
     

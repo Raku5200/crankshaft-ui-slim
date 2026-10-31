@@ -91,7 +91,7 @@ Dialog {
         
         // Error icon
         Text {
-            text: "⚠️"
+            text: "\u26A0"
             font.pixelSize: 64
             Layout.alignment: Qt.AlignHCenter
         }

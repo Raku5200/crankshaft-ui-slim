@@ -100,6 +100,7 @@ if [ "${has_connected_display}" -eq 1 ]; then
 QT_QPA_PLATFORM=eglfs
 QT_QPA_EGLFS_INTEGRATION=eglfs_kms
 QT_QPA_EGLFS_ALWAYS_SET_MODE=1
+QT_QPA_EGLFS_HIDECURSOR=1
 SLIM_UI_DISPLAY_MODE=physical
 EOF
     printf 'QT_QPA_EGLFS_ROTATION=%s\n' "${display_rotation}" >> "${ENV_FILE}"
