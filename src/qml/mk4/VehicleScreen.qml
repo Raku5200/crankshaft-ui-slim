@@ -101,7 +101,11 @@ Mk4Screen {
                     color: "#1a0705"
                     border { width: 1; color: "#4a1a12" }
                     Text {
-                        anchors.centerIn: parent
+                        // Left-aligned like the IKE: core pads the line to 20
+                        // characters so the arrow and distance never move.
+                        anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
+                        horizontalAlignment: Text.AlignLeft
+                        textFormat: Text.PlainText
                         readonly property string line: veh.ibus.clusterText.line || ""
                         text: line !== "" ? line : "-- no text --"
                         color: line !== "" ? "#ff5a36" : "#6b2a1e"
