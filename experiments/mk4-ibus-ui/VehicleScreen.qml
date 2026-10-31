@@ -1,0 +1,91 @@
+import QtQuick
+import "."
+
+// Live data broadcast by the cluster: 0x18 speed/RPM, 0x19 temperatures, 0x17 odometer.
+Mk4Screen {
+    id: veh
+    title: "VEHICLE DATA"
+
+    component Gauge: Item {
+        property string label
+        property string value
+        property string unit
+        property real fraction: 0
+        property color barColor: Mk4.route
+
+        Text {
+            id: l
+            text: parent.label
+            color: Mk4.dim
+            font { family: Mk4.font; pixelSize: 19; letterSpacing: 1 }
+        }
+        Row {
+            anchors { top: l.bottom; topMargin: 2 }
+            spacing: 8
+            Text {
+                text: parent.parent.value
+                color: Mk4.value
+                font { family: Mk4.font; pixelSize: 58; bold: true }
+            }
+            Text {
+                anchors.bottom: parent.bottom; anchors.bottomMargin: 12
+                text: parent.parent.unit
+                color: Mk4.dim
+                font { family: Mk4.font; pixelSize: 19 }
+            }
+        }
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+            height: 10
+            color: "#1e2442"
+            border { width: 1; color: "#2c3459" }
+            Rectangle {
+                width: Math.max(0, Math.min(1, parent.parent.fraction)) * parent.width
+                height: parent.height
+                color: parent.parent.barColor
+                Behavior on width { NumberAnimation { duration: 450 } }
+            }
+        }
+    }
+
+    Mk4Group {
+        id: left
+        anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+        anchors.margins: 12; anchors.topMargin: 16; anchors.bottomMargin: 16
+        width: parent.width * 0.5
+        rightBracket: false
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 10
+            spacing: 14
+            Gauge { width: parent.width; height: (parent.height - 14) / 2
+                label: "SPEED"; value: veh.ibus.speedKmh; unit: veh.ibus.speedUnit
+                fraction: veh.ibus.speedKmh / 240 }
+            Gauge { width: parent.width; height: (parent.height - 14) / 2
+                label: "ENGINE"; value: veh.ibus.rpm; unit: "rpm"
+                fraction: veh.ibus.rpm / 7000
+                barColor: veh.ibus.rpm > 6000 ? Mk4.focus : Mk4.route }
+        }
+    }
+
+    Mk4Group {
+        anchors { left: left.right; right: parent.right; top: parent.top; bottom: parent.bottom }
+        anchors.margins: 12; anchors.topMargin: 16; anchors.bottomMargin: 16
+        anchors.leftMargin: 8
+        leftBracket: false
+
+        Column {
+            anchors.fill: parent
+            Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
+                label: "Coolant"; value: veh.ibus.coolantC + "°"; unit: "C" }
+            Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
+                label: "Outside"; value: veh.ibus.ambientC + "°"; unit: "C" }
+            Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
+                label: "Range"; value: veh.ibus.range; unit: veh.ibus.distanceUnit }
+            Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
+                label: "Odometer"; value: veh.ibus.odometerKm.toLocaleString(Qt.locale("en_US"), "f", 0)
+                unit: veh.ibus.distanceUnit }
+        }
+    }
+}
