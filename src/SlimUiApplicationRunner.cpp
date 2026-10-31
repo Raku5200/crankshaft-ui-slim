@@ -53,6 +53,7 @@
 #include "PreferencesFacade.h"
 #include <QJsonObject>
 #include "CoreClient.h"
+#include "ProjectionInfoFacade.h"
 #include "ServiceProvider.h"
 #include "TouchEventForwarder.h"
 
@@ -209,6 +210,12 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
 
         // Tell core whether to look for the phone over USB or wireless: on every
         // (re)connection to core, and whenever the user changes the preference.
+        ProjectionInfoFacade projectionInfo;
+        if (CoreClient* coreClient = services.androidAutoService()) {
+            QObject::connect(coreClient, &CoreClient::projectionInfoReceived, &projectionInfo,
+                             &ProjectionInfoFacade::handleEvent);
+        }
+
         if (CoreClient* coreClient = services.androidAutoService()) {
             const auto publishConnectionMode = [coreClient, &preferencesFacade]() {
                 coreClient->publish(
@@ -252,6 +259,7 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
         engine.rootContext()->setContextProperty("_preferencesFacade", &preferencesFacade);
         engine.rootContext()->setContextProperty("_errorHandler", &errorHandler);
         engine.rootContext()->setContextProperty("_touchDebugEnabled", touchDebugMode);
+        engine.rootContext()->setContextProperty("_projectionInfo", &projectionInfo);
         // MK4-navigation-style menu is on by default; CRANKSHAFT_UI_STYLE=classic turns it off.
         engine.rootContext()->setContextProperty(
             "_mk4Enabled",

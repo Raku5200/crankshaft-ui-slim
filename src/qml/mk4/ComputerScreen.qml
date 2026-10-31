@@ -19,7 +19,7 @@ Mk4Screen {
         Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
             label: "Range"; value: obc.ibus.range; unit: obc.ibus.distanceUnit }
         Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
-            label: "Arrival"; value: obc.ibus.arrival }
+            label: "Arrival"; value: obc.ibus.arrivalShown }
         Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
             label: "Out. temp."; value: obc.ibus.outsideTemp }
     }
@@ -57,7 +57,8 @@ Mk4Screen {
                     value: obc.ibus.limit; unit: obc.ibus.speedUnit
                     onActivated: obc.ibus.obcControl(0x09, obc.ibus.limitActive ? 0x08 : 0x04) }
                 Mk4Item { id: dist; screen: obc; width: parent.width; height: parent.height / 3
-                    label: "Distance"; value: obc.ibus.distance; unit: obc.ibus.distanceUnit }
+                    label: "Distance"; value: obc.ibus.distanceShown
+                    unit: obc.ibus.guiding ? "" : obc.ibus.distanceUnit }
                 Mk4Item { id: timerItem; screen: obc; width: parent.width; height: parent.height / 3
                     label: "Timer"; marker: obc.ibus.timerRunning ? "▶" : ""
                     highlighted: obc.ibus.timerRunning

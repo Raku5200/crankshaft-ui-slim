@@ -9,6 +9,36 @@ QtObject {
     // Placeholder values until the IBus backend exists; screens show a DEMO tag.
     readonly property bool demo: true
 
+    // Live data from the phone via core (now playing, turn-by-turn, cluster
+    // line). Set to _projectionInfo by main.qml; empty maps when absent.
+    property var projection: null
+    readonly property var nowPlaying: projection && projection.nowPlaying ? projection.nowPlaying : ({})
+    readonly property var navigation: projection && projection.navigation ? projection.navigation : ({})
+    readonly property var clusterText: projection && projection.clusterText ? projection.clusterText : ({})
+    readonly property bool guiding: navigation.guiding === true
+    readonly property bool hasTrack: nowPlaying.hasTrack === true
+
+    // OBC Arrival / Distance follow Android Auto navigation while guiding.
+    readonly property string arrivalShown: guiding && navigation.eta ? navigation.eta : arrival
+    readonly property string distanceShown: guiding && navigation.destinationDistanceText
+                                            ? navigation.destinationDistanceText : distance
+
+    function maneuverSymbol(name, exitNumber) {
+        switch (name) {
+        case "left": case "ramp-left": case "exit-left": return "\u21b0"
+        case "right": case "ramp-right": case "exit-right": return "\u21b1"
+        case "slight-left": case "keep-left": case "fork-left": case "merge-left": return "\u2196"
+        case "slight-right": case "keep-right": case "fork-right": case "merge-right": return "\u2197"
+        case "sharp-left": return "\u21b2"
+        case "sharp-right": return "\u21b3"
+        case "u-turn-left": case "u-turn-right": return "\u21b6"
+        case "roundabout": case "roundabout-enter": case "roundabout-exit":
+            return "\u21bb" + (exitNumber > 0 ? exitNumber : "")
+        case "destination": case "destination-left": case "destination-right": return "\u2691"
+        default: return "\u2191"
+        }
+    }
+
     // --- IKE 0x24 "OBC Text" (cluster -> displays), strings as sent by the cluster
     property string time: Qt.formatTime(new Date(), "h:mm ap")       // 0x01
     property string date: Qt.formatDate(new Date(), "MM/dd/yyyy")    // 0x02

@@ -82,10 +82,33 @@ Mk4Screen {
             Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
                 label: "Outside"; value: veh.ibus.ambientC + "°"; unit: "C" }
             Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
-                label: "Range"; value: veh.ibus.range; unit: veh.ibus.distanceUnit }
-            Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
                 label: "Odometer"; value: veh.ibus.odometerKm.toLocaleString(Qt.locale("en_US"), "f", 0)
                 unit: veh.ibus.distanceUnit }
+
+            // What the instrument cluster's 20-character display will show
+            // (navigation turn, or the scrolling song), as computed by core.
+            Item {
+                width: parent.width; height: parent.height / 4
+                Text {
+                    anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter }
+                    text: "Cluster"
+                    color: Mk4.label
+                    font { family: Mk4.font; pixelSize: Mk4.labelSize; letterSpacing: 0.5 }
+                }
+                Rectangle {
+                    anchors { right: parent.right; rightMargin: 10; verticalCenter: parent.verticalCenter }
+                    width: 20 * 10 + 16; height: 34; radius: 2
+                    color: "#1a0705"
+                    border { width: 1; color: "#4a1a12" }
+                    Text {
+                        anchors.centerIn: parent
+                        readonly property string line: veh.ibus.clusterText.line || ""
+                        text: line !== "" ? line : "-- no text --"
+                        color: line !== "" ? "#ff5a36" : "#6b2a1e"
+                        font { family: "DejaVu Sans Mono"; pixelSize: 16; bold: true }
+                    }
+                }
+            }
         }
     }
 }

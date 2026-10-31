@@ -80,6 +80,8 @@ signals:
     void videoTransportModeChanged(const QString& mode);
     void webRtcSignalingReceived(const QString& topic, const QVariantMap& payload);
     void connectionError(const QString& error);
+    // now-playing, navigation and cluster-text events from core
+    void projectionInfoReceived(const QString& topic, const QVariantMap& payload);
 
 private slots:
     void onWebSocketConnected();

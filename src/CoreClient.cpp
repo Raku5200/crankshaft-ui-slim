@@ -688,6 +688,13 @@ auto CoreClient::parseAndHandleEvent(const QJsonDocument& doc) -> void {
 
         Logger::instance().debugContext("CoreClient", QString("Received event: %1").arg(topic));
 
+        if (topic == "android-auto/status/now-playing" ||
+            topic == "android-auto/status/navigation" ||
+            topic == "android-auto/status/cluster-text") {
+            emit projectionInfoReceived(topic, payload.toVariantMap());
+            return;
+        }
+
         if (topic == "android-auto/status/state-changed") {
             const int coreState = payload.value("state").toInt();
 

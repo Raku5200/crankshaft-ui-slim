@@ -69,6 +69,7 @@ ApplicationWindow {
     // Placeholder vehicle data until the IBus interface is connected.
     Mk4.MockIbus {
         id: ibusData
+        projection: typeof _projectionInfo !== "undefined" ? _projectionInfo : null
     }
 
     // Theme Manager - centralized theme control

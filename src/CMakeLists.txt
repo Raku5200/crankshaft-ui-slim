@@ -146,6 +146,7 @@ qt_add_executable(crankshaft-ui-slim
     PreferencesService.cpp
     CoreClient.h
     CoreClient.cpp
+    ProjectionInfoFacade.h
 )
 target_compile_definitions(crankshaft-ui-slim PRIVATE CRANKSHAFT_AASDK_OLD_API)
 
