@@ -169,6 +169,18 @@ Item {
 
                     Item { Layout.fillWidth: true }
 
+                    Switch {
+                        id: btPowerSwitch
+                        enabled: !!root.bt
+                        checked: !!root.bt && root.bt.btEnabled
+                        // Re-bind after a toggle so the switch follows the
+                        // state core reports back, not just the tap.
+                        onToggled: {
+                            root.bt.setBtEnabled(checked)
+                            checked = Qt.binding(function() { return !!root.bt && root.bt.btEnabled })
+                        }
+                    }
+
                     BusyIndicator {
                         running: root.bt ? root.bt.discovering : false
                         visible: running
@@ -197,7 +209,9 @@ Item {
                 Label {
                     Layout.fillWidth: true
                     visible: !(!!root.bt && root.bt.btEnabled)
-                    text: qsTr("Bluetooth is currently disabled at system level. Enable Bluetooth from system settings to manage pairing and audio routing here.", "SettingsPanel")
+                    text: root.bt && root.bt.lastError.length > 0
+                          ? qsTr("Bluetooth could not be turned on: %1", "SettingsPanel").arg(root.bt.lastError)
+                          : qsTr("Bluetooth is off. Turn it on with the switch above to pair and connect devices.", "SettingsPanel")
                     font.pointSize: 11
                     opacity: 0.82
                     wrapMode: Text.WordWrap

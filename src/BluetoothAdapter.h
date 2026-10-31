@@ -62,6 +62,7 @@ public:
 
 public slots:
     void setBtEnabled(bool enabled);
+    void refreshStatus();
     void startDiscovery();
     void stopDiscovery();
     void pairDevice(const QString& address);

@@ -20,6 +20,7 @@
 #include "BluetoothAdapter.h"
 
 #include <QJsonObject>
+#include <QTimer>
 
 #include "CoreClient.h"
 #include "Logger.h"
@@ -29,6 +30,11 @@ BluetoothAdapter::BluetoothAdapter(CoreClient* coreClient, QObject* parent)
     if (m_coreClient) {
         connect(m_coreClient, &CoreClient::bluetoothEventReceived, this,
                 &BluetoothAdapter::onBluetoothEvent);
+        // coreConnected fires just before CoreClient subscribes to
+        // bluetooth/#, so ask on the next event-loop turn.
+        connect(m_coreClient, &CoreClient::coreConnected, this, [this]() {
+            QTimer::singleShot(0, this, [this]() { refreshStatus(); });
+        });
     }
     Logger::instance().debugContext("BluetoothAdapter", "Created (core WebSocket mode)");
 }
@@ -49,6 +55,11 @@ QString BluetoothAdapter::lastError() const { return m_lastError; }
 QVariantList BluetoothAdapter::getPairedAudioDevices() const { return m_pairedAudioDevices; }
 QVariantList BluetoothAdapter::getDiscoveredAudioDevices() const {
     return m_discoveredAudioDevices;
+}
+
+void BluetoothAdapter::refreshStatus() {
+    if (!m_coreClient) return;
+    m_coreClient->publish(QStringLiteral("bluetooth/status"), QJsonObject());
 }
 
 void BluetoothAdapter::setBtEnabled(bool enabled) {
