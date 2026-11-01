@@ -259,7 +259,7 @@ auto PreferencesFacade::resetToDefaults() -> void {
     m_displayRotation = DEFAULT_ROTATION;
     m_aaProjectionFullscreenDelaySeconds = DEFAULT_AA_FULLSCREEN_DELAY_SECONDS;
     m_audioVolume = DEFAULT_VOLUME;
-    m_connectionPreference = QStringLiteral("USB");
+    m_connectionPreference = QStringLiteral("AUTO");
     m_themeMode = QStringLiteral("DARK");
     m_lastConnectedDeviceId.clear();
 
