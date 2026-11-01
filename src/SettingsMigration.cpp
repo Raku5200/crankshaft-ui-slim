@@ -36,7 +36,7 @@ const char* KEY_LAST_CONNECTED_DEVICE_ID = "slim_ui.device.lastConnected";
 // Validation constants
 const int MIN_PERCENTAGE = 0;
 const int MAX_PERCENTAGE = 100;
-const QStringList VALID_CONNECTION_PREFERENCES = {"USB", "WIRELESS"};
+const QStringList VALID_CONNECTION_PREFERENCES = {"AUTO", "USB", "WIRELESS"};
 const QStringList VALID_THEME_MODES = {"LIGHT", "DARK"};
 }  // namespace
 

@@ -127,8 +127,9 @@ auto PreferencesFacade::setConnectionPreference(const QString& mode) -> void {
         return;
     }
 
-    // Validate mode is USB or WIRELESS
-    if (mode != QStringLiteral("USB") && mode != QStringLiteral("WIRELESS")) {
+    // Validate mode is AUTO, USB or WIRELESS
+    if (mode != QStringLiteral("AUTO") && mode != QStringLiteral("USB") &&
+        mode != QStringLiteral("WIRELESS")) {
         Logger::instance().warningContext(
             QStringLiteral("PreferencesFacade"),
             QStringLiteral("Invalid connection preference: %1").arg(mode));
@@ -199,7 +200,7 @@ auto PreferencesFacade::loadSettings() -> void {
         loadSetting(KEY_AA_FULLSCREEN_DELAY_SECONDS, DEFAULT_AA_FULLSCREEN_DELAY_SECONDS).toInt());
     m_audioVolume = validatePercentage(loadSetting(KEY_AUDIO_VOLUME, DEFAULT_VOLUME).toInt());
     m_connectionPreference =
-        loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("USB")).toString();
+        loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("AUTO")).toString();
     m_themeMode = loadSetting(KEY_THEME_MODE, QStringLiteral("DARK")).toString();
     m_lastConnectedDeviceId = loadSetting(KEY_LAST_CONNECTED_DEVICE_ID, QString()).toString();
 
@@ -375,13 +376,14 @@ auto PreferencesFacade::detectAndRecoverCorruption() -> QString {
         recoveredFields << QStringLiteral("volume");
     }
 
-    if (m_connectionPreference != QStringLiteral("USB") &&
+    if (m_connectionPreference != QStringLiteral("AUTO") &&
+        m_connectionPreference != QStringLiteral("USB") &&
         m_connectionPreference != QStringLiteral("WIRELESS")) {
         Logger::instance().warningContext(
             QStringLiteral("PreferencesFacade"),
             QStringLiteral("Corrupted connection preference: %1, resetting to default")
                 .arg(m_connectionPreference));
-        m_connectionPreference = QStringLiteral("USB");
+        m_connectionPreference = QStringLiteral("AUTO");
         recoveredFields << QStringLiteral("connectionPreference");
     }
 

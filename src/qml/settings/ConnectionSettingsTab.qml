@@ -26,7 +26,7 @@ Item {
             Components.ConnectionPreferenceToggle {
                 Layout.fillWidth: true
                 showLabel: false
-                currentPreference: root.preferencesFacade ? root.preferencesFacade.connectionPreference : "USB"
+                currentPreference: root.preferencesFacade ? root.preferencesFacade.connectionPreference : "AUTO"
                 onPreferenceChanged: (newPreference) => {
                     if (root.preferencesFacade) {
                         root.preferencesFacade.connectionPreference = newPreference

@@ -47,7 +47,7 @@ private slots:
         QCOMPARE(facade.displayRotation(), 0);
         QCOMPARE(facade.aaProjectionFullscreenDelaySeconds(), 0);
         QCOMPARE(facade.audioVolume(), 50);
-        QCOMPARE(facade.connectionPreference(), QStringLiteral("USB"));
+        QCOMPARE(facade.connectionPreference(), QStringLiteral("AUTO"));
         QCOMPARE(facade.themeMode(), QStringLiteral("DARK"));
     }
 

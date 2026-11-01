@@ -25,7 +25,7 @@ import QtQuick.Layouts
  * @brief Reusable toggle component for connection preference (USB/Wireless).
  *
  * Properties:
- * - currentPreference: Current connection preference ("USB" or "WIRELESS")
+ * - currentPreference: Current connection preference ("AUTO", "USB" or "WIRELESS")
  * - onPreferenceChanged: Signal emitted when user selects a connection type
  */
 ColumnLayout {
@@ -33,7 +33,7 @@ ColumnLayout {
     spacing: 8
     width: parent ? parent.width : implicitWidth
     
-    property string currentPreference: "USB"
+    property string currentPreference: "AUTO"
     // Keep optional so parent cards can provide the section title without duplicates.
     property bool showLabel: true
     property string titleText: qsTr("Connection Preference", "ConnectionPreferenceToggle")
@@ -56,6 +56,23 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 16
         
+        SegmentedOptionButton {
+            // Looks for a USB phone and a wireless phone at the same time.
+            baseText: qsTr("Auto", "ConnectionPreferenceToggle")
+            Layout.fillWidth: true
+            Layout.preferredWidth: 1  // equal split regardless of label length
+            Layout.preferredHeight: 46
+            ButtonGroup.group: connectionPreferenceGroup
+            checked: connectionToggle.currentPreference === "AUTO"
+
+            onClicked: {
+                if (checked) {
+                    connectionToggle.currentPreference = "AUTO"
+                    connectionToggle.preferenceChanged("AUTO")
+                }
+            }
+        }
+
         SegmentedOptionButton {
             baseText: qsTr("USB", "ConnectionPreferenceToggle")
             Layout.fillWidth: true

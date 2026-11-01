@@ -47,10 +47,12 @@ Item {
     readonly property int stateError: 4
 
     property int connectionState: androidAutoFacade ? androidAutoFacade.connectionState : stateDisconnected
-    // USB or Wireless, from Settings > Connection; changes the instructions shown.
-    readonly property bool wirelessMode: typeof _preferencesFacade !== "undefined" && _preferencesFacade
-                                         ? _preferencesFacade.connectionPreference === "WIRELESS"
-                                         : false
+    // Auto, USB or Wireless, from Settings > Connection; changes the instructions shown.
+    readonly property string connectionMode: typeof _preferencesFacade !== "undefined" && _preferencesFacade
+                                             ? _preferencesFacade.connectionPreference
+                                             : "AUTO"
+    readonly property bool wirelessMode: connectionMode === "WIRELESS"
+    readonly property bool autoMode: connectionMode !== "WIRELESS" && connectionMode !== "USB"
     readonly property bool compact: height <= 600
 
     Rectangle {
@@ -137,7 +139,8 @@ Item {
                     readonly property string route: (typeof _mk4Enabled === "undefined" || _mk4Enabled === true)
                         ? qsTr("MENU \u203a Settings \u203a Crankshaft settings")
                         : qsTr("\u2699 Settings \u203a Connection")
-                    text: (statusView.wirelessMode ? qsTr("Wireless mode") : qsTr("USB mode"))
+                    text: (statusView.wirelessMode ? qsTr("Wireless mode")
+                           : statusView.autoMode ? qsTr("Auto mode (USB + wireless)") : qsTr("USB mode"))
                           + " \u00b7 " + qsTr("change with %1").arg(route)
                     font.pixelSize: palette.fontSizeBody - 2
                     color: palette.textPrimaryColor
@@ -245,6 +248,8 @@ Item {
         switch (connectionState) {
         case stateDisconnected:
         case stateSearching:
+            if (autoMode)
+                return qsTr("Connect your phone with a USB cable, or pair Bluetooth with \u201cCrankshaft\u201d within 2 minutes of start-up for wireless.")
             return wirelessMode
                 ? qsTr("First time: on your phone, pair Bluetooth with \u201cCrankshaft\u201d within 2 minutes of start-up. Paired phones start Android Auto automatically.")
                 : qsTr("Connect your phone with a USB cable. Android Auto starts automatically.")
