@@ -53,6 +53,10 @@ auto Logger::instance() -> Logger& {
 auto Logger::setLevel(Level level) -> void { m_level = level; }
 
 auto Logger::setLogFile(const QString& filePath) -> void {
+    QMutexLocker lock(&m_fileMutex);
+    if (m_file.isOpen()) {
+        m_file.close();
+    }
     m_logFilePath = filePath;
 
     if (m_logFilePath.isEmpty()) {
@@ -108,11 +112,15 @@ auto Logger::log(Level level, const QString& component, const QString& message,
     const QString line = QString::fromUtf8(QJsonDocument(entry).toJson(QJsonDocument::Compact));
     QTextStream(stdout) << line << Qt::endl;
 
+    QMutexLocker lock(&m_fileMutex);
     if (!m_logFilePath.isEmpty()) {
-        QFile file(m_logFilePath);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-            QTextStream stream(&file);
-            stream << line << Qt::endl;
+        if (!m_file.isOpen()) {
+            m_file.setFileName(m_logFilePath);
+            if (!m_file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+                return;
+            }
         }
+        m_file.write(line.toUtf8() + '\n');
+        m_file.flush();
     }
 }

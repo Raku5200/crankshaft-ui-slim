@@ -276,6 +276,11 @@ auto CoreClient::subscribeToTopics() -> void {
     ibusSubscription["topic"] = "ibus/#";
     m_webSocket->sendTextMessage(QJsonDocument(ibusSubscription).toJson(QJsonDocument::Compact));
 
+    QJsonObject systemSubscription;
+    systemSubscription["type"] = "subscribe";
+    systemSubscription["topic"] = "system/#";
+    m_webSocket->sendTextMessage(QJsonDocument(systemSubscription).toJson(QJsonDocument::Compact));
+
     QJsonObject btSubscription;
     btSubscription["type"] = "subscribe";
     btSubscription["topic"] = "bluetooth/#";
@@ -702,6 +707,11 @@ auto CoreClient::parseAndHandleEvent(const QJsonDocument& doc) -> void {
 
         if (topic.startsWith(QStringLiteral("ibus/"))) {
             emit ibusEventReceived(topic, payload.toVariantMap());
+            return;
+        }
+
+        if (topic.startsWith(QStringLiteral("system/"))) {
+            emit systemEventReceived(topic, payload.toVariantMap());
             return;
         }
 

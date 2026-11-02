@@ -84,6 +84,8 @@ signals:
     void projectionInfoReceived(const QString& topic, const QVariantMap& payload);
     // ibus/status, ibus/obc and ibus/input events from core
     void ibusEventReceived(const QString& topic, const QVariantMap& payload);
+    // system/... results from core (e.g. save logs)
+    void systemEventReceived(const QString& topic, const QVariantMap& payload);
 
 private slots:
     void onWebSocketConnected();

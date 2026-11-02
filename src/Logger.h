@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <QFile>
+#include <QMutex>
 #include <QVariantMap>
 
 class QString;
@@ -54,4 +56,7 @@ private:
 
 	Level m_level = Level::Info;
 	QString m_logFilePath;
+	// Kept open: opening the file per line is slow on a Pi's SD card.
+	QFile m_file;
+	QMutex m_fileMutex;
 };
