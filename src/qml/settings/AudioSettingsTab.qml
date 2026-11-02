@@ -74,7 +74,7 @@ Item {
                     opacity: 0.7
                     font.pointSize: 10
                     text: root.audioOnPhone
-                          ? qsTr("The phone plays the sound itself: its own speaker, or a Bluetooth device it is connected to. Android Auto reconnects to apply.", "SettingsPanel")
+                          ? qsTr("The phone plays music and navigation prompts itself: its own speaker, or a Bluetooth device it is connected to. Short system sounds still play here. Android Auto reconnects to apply.", "SettingsPanel")
                           : qsTr("Music, navigation prompts and system sounds play through this unit. Android Auto reconnects to apply.", "SettingsPanel")
                 }
             }
