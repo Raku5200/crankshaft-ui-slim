@@ -84,7 +84,7 @@ class IbusFacade : public QObject {
     }
 
     /// Show the Android Auto line on the cluster again after the BC button
-    /// paused it (it also comes back by itself at the next ignition on).
+    /// paused it (it also comes back by itself with the next song or turn).
     Q_INVOKABLE void resumeClusterText() {
         if (m_coreClient) {
             m_coreClient->publish(QStringLiteral("ibus/cluster-text-resume"), QJsonObject{});

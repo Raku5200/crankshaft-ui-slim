@@ -84,7 +84,7 @@ Item {
 
                 ToggleRow {
                     title: qsTr("Show song and navigation on the cluster", "SettingsPanel")
-                    note: qsTr("Pressing BC on the stalk to pick OBC values pauses it until the ignition is switched off.", "SettingsPanel")
+                    note: qsTr("Press BC on the stalk to show OBC values instead: the text then waits for the next song or turn.", "SettingsPanel")
                     checked: root.preferencesFacade && root.preferencesFacade.ibusClusterText
                     onToggled: (on) => { if (root.preferencesFacade) root.preferencesFacade.ibusClusterText = on }
                 }
@@ -96,7 +96,7 @@ Item {
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        text: qsTr("Paused: the cluster is showing OBC values.", "SettingsPanel")
+                        text: qsTr("The cluster is showing OBC values until the next song or turn.", "SettingsPanel")
                     }
                     Button {
                         text: qsTr("Show again", "SettingsPanel")
