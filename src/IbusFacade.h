@@ -83,6 +83,14 @@ class IbusFacade : public QObject {
         publishInputTarget();
     }
 
+    /// Show the Android Auto line on the cluster again after the BC button
+    /// paused it (it also comes back by itself at the next ignition on).
+    Q_INVOKABLE void resumeClusterText() {
+        if (m_coreClient) {
+            m_coreClient->publish(QStringLiteral("ibus/cluster-text-resume"), QJsonObject{});
+        }
+    }
+
   public slots:
     void handleEvent(const QString& topic, const QVariantMap& payload) {
         if (topic == QStringLiteral("ibus/status")) {

@@ -81,6 +81,7 @@ QtObject {
     // --- Units from IKE 0x15 Language & Region
     readonly property string distanceUnit: liveConnected && obc.distanceUnit ? obc.distanceUnit : "km"
     readonly property string consumptionUnit: liveConnected && obc.consumption1Unit ? obc.consumption1Unit : "L/100"
+    readonly property string consumption2Unit: liveConnected && obc.consumption2Unit ? obc.consumption2Unit : consumptionUnit
     readonly property string speedUnit: liveConnected && obc.speedUnit ? obc.speedUnit : "km/h"
     // The cluster's temperature text has no unit; the demo text already has "°".
     readonly property string temperatureUnit: liveConnected && obc.temperatureUnit ? obc.temperatureUnit : ""

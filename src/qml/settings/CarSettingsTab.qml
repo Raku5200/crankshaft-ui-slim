@@ -80,6 +80,33 @@ Item {
 
             Components.SettingsCard {
                 Layout.fillWidth: true
+                title: qsTr("Instrument cluster", "SettingsPanel")
+
+                ToggleRow {
+                    title: qsTr("Show song and navigation on the cluster", "SettingsPanel")
+                    note: qsTr("Pressing BC on the stalk to pick OBC values pauses it until the ignition is switched off.", "SettingsPanel")
+                    checked: root.preferencesFacade && root.preferencesFacade.ibusClusterText
+                    onToggled: (on) => { if (root.preferencesFacade) root.preferencesFacade.ibusClusterText = on }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+                    visible: !!root.ibus && root.ibus.status.clusterTextPaused === true
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        text: qsTr("Paused: the cluster is showing OBC values.", "SettingsPanel")
+                    }
+                    Button {
+                        text: qsTr("Show again", "SettingsPanel")
+                        onClicked: root.ibus.resumeClusterText()
+                    }
+                }
+            }
+
+            Components.SettingsCard {
+                Layout.fillWidth: true
                 title: qsTr("Car controls", "SettingsPanel")
 
                 ToggleRow {

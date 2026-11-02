@@ -272,19 +272,21 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
                                  publishAudioOutput();
                              });
 
-            // Car IBus: OBC polling and which car controls to use.
+            // Car IBus: OBC polling, which car controls to use, cluster text.
             const auto publishIbusSettings = [coreClient, &preferencesFacade]() {
                 coreClient->publish(
                     QStringLiteral("ibus/settings"),
                     QJsonObject{{QStringLiteral("pollObc"), preferencesFacade.ibusPollObc()},
                                 {QStringLiteral("bmbtInput"), preferencesFacade.ibusBmbtInput()},
-                                {QStringLiteral("mflInput"), preferencesFacade.ibusMflInput()}});
+                                {QStringLiteral("mflInput"), preferencesFacade.ibusMflInput()},
+                                {QStringLiteral("clusterText"), preferencesFacade.ibusClusterText()}});
             };
             QObject::connect(coreClient, &CoreClient::coreConnected, &preferencesFacade,
                              publishIbusSettings);
             for (const auto signal : {&PreferencesFacade::ibusPollObcChanged,
                                       &PreferencesFacade::ibusBmbtInputChanged,
-                                      &PreferencesFacade::ibusMflInputChanged}) {
+                                      &PreferencesFacade::ibusMflInputChanged,
+                                      &PreferencesFacade::ibusClusterTextChanged}) {
                 QObject::connect(&preferencesFacade, signal, coreClient,
                                  [publishIbusSettings](bool) { publishIbusSettings(); });
             }

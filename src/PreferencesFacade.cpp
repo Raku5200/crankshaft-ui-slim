@@ -34,6 +34,7 @@ const char* KEY_AUDIO_OUTPUT_DEVICE = "slim_ui.audio.outputDevice";
 const char* KEY_IBUSPOLLOBC = "slim_ui.ibus.pollObc";
 const char* KEY_IBUSBMBTINPUT = "slim_ui.ibus.bmbtInput";
 const char* KEY_IBUSMFLINPUT = "slim_ui.ibus.mflInput";
+const char* KEY_IBUSCLUSTERTEXT = "slim_ui.ibus.clusterText";
 const char* KEY_CONNECTION_PREFERENCE = "slim_ui.connection.preference";
 const char* KEY_THEME_MODE = "slim_ui.theme.mode";
 const char* KEY_LAST_CONNECTED_DEVICE_ID = "slim_ui.device.lastConnected";
@@ -246,6 +247,7 @@ auto PreferencesFacade::loadSettings() -> void {
     m_ibusPollObc = loadSetting(KEY_IBUSPOLLOBC, false).toBool();
     m_ibusBmbtInput = loadSetting(KEY_IBUSBMBTINPUT, true).toBool();
     m_ibusMflInput = loadSetting(KEY_IBUSMFLINPUT, true).toBool();
+    m_ibusClusterText = loadSetting(KEY_IBUSCLUSTERTEXT, true).toBool();
     m_connectionPreference =
         loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("AUTO")).toString();
     m_themeMode = loadSetting(KEY_THEME_MODE, QStringLiteral("DARK")).toString();
@@ -294,6 +296,7 @@ auto PreferencesFacade::saveSettings() -> void {
     saveSetting(KEY_IBUSPOLLOBC, m_ibusPollObc);
     saveSetting(KEY_IBUSBMBTINPUT, m_ibusBmbtInput);
     saveSetting(KEY_IBUSMFLINPUT, m_ibusMflInput);
+    saveSetting(KEY_IBUSCLUSTERTEXT, m_ibusClusterText);
     saveSetting(KEY_CONNECTION_PREFERENCE, m_connectionPreference);
     saveSetting(KEY_THEME_MODE, m_themeMode);
     saveSetting(KEY_LAST_CONNECTED_DEVICE_ID, m_lastConnectedDeviceId);
@@ -336,6 +339,17 @@ auto PreferencesFacade::setIbusMflInput(bool value) -> void {
     emit ibusMflInputChanged(m_ibusMflInput);
 }
 
+auto PreferencesFacade::setIbusClusterText(bool value) -> void {
+    if (value == m_ibusClusterText) {
+        return;
+    }
+    m_ibusClusterText = value;
+    saveSetting(KEY_IBUSCLUSTERTEXT, m_ibusClusterText);
+    Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
+                                   QStringLiteral("ibusClusterText changed to %1").arg(value));
+    emit ibusClusterTextChanged(m_ibusClusterText);
+}
+
 auto PreferencesFacade::resetToDefaults() -> void {
     Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
                                    QStringLiteral("Resetting settings to factory defaults"));
@@ -349,6 +363,7 @@ auto PreferencesFacade::resetToDefaults() -> void {
     m_ibusPollObc = false;
     m_ibusBmbtInput = true;
     m_ibusMflInput = true;
+    m_ibusClusterText = true;
     m_connectionPreference = QStringLiteral("AUTO");
     m_themeMode = QStringLiteral("DARK");
     m_lastConnectedDeviceId.clear();
@@ -364,6 +379,7 @@ auto PreferencesFacade::resetToDefaults() -> void {
     emit ibusPollObcChanged(m_ibusPollObc);
     emit ibusBmbtInputChanged(m_ibusBmbtInput);
     emit ibusMflInputChanged(m_ibusMflInput);
+    emit ibusClusterTextChanged(m_ibusClusterText);
     emit connectionPreferenceChanged(m_connectionPreference);
     emit themeModeChanged(m_themeMode);
     emit lastConnectedDeviceIdChanged(m_lastConnectedDeviceId);

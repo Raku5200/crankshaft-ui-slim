@@ -2,8 +2,8 @@ import QtQuick
 import "."
 
 // MK4-style strip shown along the bottom of Android Auto: MENU button, the
-// on-board computer values (range, consumption, average speed, outside
-// temperature) and the cluster clock. Turn-by-turn and the song are on the
+// on-board computer values (range, consumption 1 and 2) and the cluster
+// clock. Turn-by-turn and the song are on the
 // instrument cluster (IKE) instead.
 Mk4Bar {
     id: bar
@@ -50,9 +50,8 @@ Mk4Bar {
                 anchors.baseline: v.baseline }
         }
         Stat { label: "Range"; value: bar.ibus ? bar.ibus.range : ""; unit: bar.ibus ? bar.ibus.distanceUnit : "" }
-        Stat { label: "Cons."; value: bar.ibus ? bar.ibus.consumption1 : ""; unit: bar.ibus ? bar.ibus.consumptionUnit : "" }
-        Stat { label: "Avg"; value: bar.ibus ? bar.ibus.avgSpeed : ""; unit: bar.ibus ? bar.ibus.speedUnit : "" }
-        Stat { label: "Out"; value: bar.ibus ? bar.ibus.outsideTemp : ""; unit: bar.ibus ? bar.ibus.temperatureUnit : "" }
+        Stat { label: "Cons. 1"; value: bar.ibus ? bar.ibus.consumption1 : ""; unit: bar.ibus ? bar.ibus.consumptionUnit : "" }
+        Stat { label: "Cons. 2"; value: bar.ibus ? bar.ibus.consumption2 : ""; unit: bar.ibus ? bar.ibus.consumption2Unit : "" }
     }
 
     Text {
