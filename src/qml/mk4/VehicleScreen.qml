@@ -78,11 +78,11 @@ Mk4Screen {
         Column {
             anchors.fill: parent
             Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
-                label: "Coolant"; value: veh.ibus.coolantC + "°"; unit: "C" }
+                label: "Coolant"; value: veh.ibus.shown(veh.ibus.coolantC) + "°"; unit: "C" }
             Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
-                label: "Outside"; value: veh.ibus.ambientC + "°"; unit: "C" }
+                label: "Outside"; value: veh.ibus.shown(veh.ibus.ambientC) + "°"; unit: "C" }
             Mk4Item { screen: veh; selectable: false; width: parent.width; height: parent.height / 4
-                label: "Odometer"; value: veh.ibus.odometerKm.toLocaleString(Qt.locale("en_US"), "f", 0)
+                label: "Odometer"; value: veh.ibus.odometerKm > -999 ? veh.ibus.odometerKm.toLocaleString(Qt.locale("en_US"), "f", 0) : "--"
                 unit: veh.ibus.distanceUnit }
 
             // What the instrument cluster's 20-character display will show

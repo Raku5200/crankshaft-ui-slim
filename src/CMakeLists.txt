@@ -147,6 +147,7 @@ qt_add_executable(crankshaft-ui-slim
     CoreClient.h
     CoreClient.cpp
     ProjectionInfoFacade.h
+    IbusFacade.h
     AudioOutputManager.h
     AudioOutputManager.cpp
 )

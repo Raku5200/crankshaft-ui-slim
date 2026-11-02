@@ -66,10 +66,46 @@ ApplicationWindow {
         navigationController.currentViewState === navigationController.viewStateAAProjection &&
         !navigationController.settingsPanelVisible
 
-    // Placeholder vehicle data until the IBus interface is connected.
+    // Vehicle data: live from the car's IBus when the interface is plugged in,
+    // placeholder values otherwise.
     Mk4.MockIbus {
         id: ibusData
         projection: typeof _projectionInfo !== "undefined" ? _projectionInfo : null
+        live: typeof _ibus !== "undefined" ? _ibus : null
+    }
+
+    // Car buttons (BMBT dial and buttons, steering wheel) drive the MK4 menu
+    // while it is open; otherwise core sends them to Android Auto.
+    readonly property bool carInputToUi: mk4Shell.visible || navigationController.settingsPanelVisible
+    onCarInputToUiChanged: if (typeof _ibus !== "undefined") _ibus.setInputTarget(carInputToUi ? "ui" : "android-auto")
+
+    Connections {
+        target: typeof _ibus !== "undefined" ? _ibus : null
+        function onInputReceived(event) {
+            if (!root.mk4Enabled)
+                return
+            if (event.button === "menu" && event.state === "press") {
+                if (mk4Shell.visible)
+                    mk4Shell.menuButton()
+                else if (!navigationController.settingsPanelVisible)
+                    mk4Shell.open()
+                return
+            }
+            if (!mk4Shell.visible)
+                return
+            if (mk4Shell.monitorOff) {
+                if (event.state === "press" || event.kind === "dial")
+                    mk4Shell.monitorOff = false
+                return
+            }
+            if (event.kind === "dial") {
+                const step = event.steps > 0 ? 1 : -1
+                for (let i = 0; i < Math.abs(event.steps); ++i)
+                    mk4Shell.current.dial(step)
+            } else if (event.button === "confirm" && event.state === "release") {
+                mk4Shell.current.confirm()
+            }
+        }
     }
 
     // Theme Manager - centralized theme control

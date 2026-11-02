@@ -271,6 +271,11 @@ auto CoreClient::subscribeToTopics() -> void {
     webRtcSubscription["topic"] = "android-auto/webrtc/*";
     m_webSocket->sendTextMessage(QJsonDocument(webRtcSubscription).toJson(QJsonDocument::Compact));
 
+    QJsonObject ibusSubscription;
+    ibusSubscription["type"] = "subscribe";
+    ibusSubscription["topic"] = "ibus/#";
+    m_webSocket->sendTextMessage(QJsonDocument(ibusSubscription).toJson(QJsonDocument::Compact));
+
     QJsonObject btSubscription;
     btSubscription["type"] = "subscribe";
     btSubscription["topic"] = "bluetooth/#";
@@ -692,6 +697,11 @@ auto CoreClient::parseAndHandleEvent(const QJsonDocument& doc) -> void {
             topic == "android-auto/status/navigation" ||
             topic == "android-auto/status/cluster-text") {
             emit projectionInfoReceived(topic, payload.toVariantMap());
+            return;
+        }
+
+        if (topic.startsWith(QStringLiteral("ibus/"))) {
+            emit ibusEventReceived(topic, payload.toVariantMap());
             return;
         }
 

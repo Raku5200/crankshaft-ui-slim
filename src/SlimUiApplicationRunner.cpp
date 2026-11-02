@@ -55,6 +55,7 @@
 #include "CoreClient.h"
 #include "AudioOutputManager.h"
 #include "ProjectionInfoFacade.h"
+#include "IbusFacade.h"
 #include "ServiceProvider.h"
 #include "TouchEventForwarder.h"
 
@@ -212,6 +213,7 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
         // Tell core whether to look for the phone over USB or wireless: on every
         // (re)connection to core, and whenever the user changes the preference.
         ProjectionInfoFacade projectionInfo;
+        IbusFacade ibusFacade(services.androidAutoService());
         if (CoreClient* coreClient = services.androidAutoService()) {
             QObject::connect(coreClient, &CoreClient::projectionInfoReceived, &projectionInfo,
                              &ProjectionInfoFacade::handleEvent);
@@ -301,6 +303,7 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
         engine.rootContext()->setContextProperty("_errorHandler", &errorHandler);
         engine.rootContext()->setContextProperty("_touchDebugEnabled", touchDebugMode);
         engine.rootContext()->setContextProperty("_projectionInfo", &projectionInfo);
+        engine.rootContext()->setContextProperty("_ibus", &ibusFacade);
         // MK4-navigation-style menu is on by default; CRANKSHAFT_UI_STYLE=classic turns it off.
         engine.rootContext()->setContextProperty(
             "_mk4Enabled",
