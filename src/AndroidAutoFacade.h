@@ -242,6 +242,13 @@ private:
     int m_projectionWidth;
     int m_projectionHeight;
     QTimer m_videoInactiveDebounceTimer;
+    // Keyframe watchdog: video arriving but nothing decoded (joined the
+    // stream mid-session, no IDR yet) -> ask core for a keyframe.
+    QElapsedTimer m_lastH264Output;
+    QElapsedTimer m_h264StalledSince;
+    QElapsedTimer m_lastKeyframeRequest;
+    auto noteH264Output() -> void;
+    auto checkH264Stall() -> void;
     QTimer m_projectionFrameDispatchTimer;
     QElapsedTimer m_lastProjectionFrameDispatch;
     QString m_pendingProjectionFrameUrl;

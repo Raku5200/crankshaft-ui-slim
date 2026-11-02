@@ -401,6 +401,7 @@ auto AndroidAutoFacade::onCoreH264VideoFrameReceived(const QByteArray& frameData
     m_projectionHeight = height;
     emit projectionFrameChanged(m_projectionWidth, m_projectionHeight);
     m_h264Decoder->pushFrame(frameData, width, height);
+    checkH264Stall();
 
     if (m_h264InputArrivalCount == 1 || (m_h264InputArrivalCount % 30) == 0) {
         Logger::instance().infoContext(
@@ -411,7 +412,37 @@ auto AndroidAutoFacade::onCoreH264VideoFrameReceived(const QByteArray& frameData
     }
 }
 
+auto AndroidAutoFacade::noteH264Output() -> void {
+    m_lastH264Output.restart();
+    m_h264StalledSince.invalidate();
+}
+
+auto AndroidAutoFacade::checkH264Stall() -> void {
+    // Video is coming in but no picture has come out for a while: the
+    // decoder has no keyframe to start from (this UI joined a running
+    // session). Ask the phone, via core, for one.
+    if (m_lastH264Output.isValid() && m_lastH264Output.elapsed() < 1500) {
+        m_h264StalledSince.invalidate();
+        return;
+    }
+    if (!m_h264StalledSince.isValid()) {
+        m_h264StalledSince.start();
+        return;
+    }
+    if (m_h264StalledSince.elapsed() < 2000) return;
+    if (m_lastKeyframeRequest.isValid() && m_lastKeyframeRequest.elapsed() < 3000) return;
+    auto* aaService = m_serviceProvider ? m_serviceProvider->androidAutoService() : nullptr;
+    if (!aaService) return;
+    m_lastKeyframeRequest.restart();
+    Logger::instance().warningContext(
+        "AndroidAutoFacade", "Video arriving but nothing decoded; asking for a keyframe",
+        {{"stalled_ms", m_h264StalledSince.elapsed()}});
+    aaService->publish(QStringLiteral("android-auto/video/keyframe-request"),
+                       QJsonObject{{QStringLiteral("reason"), QStringLiteral("UI decoder stalled")}});
+}
+
 auto AndroidAutoFacade::onDecodedH264Frame(const QImage& image, int width, int height) -> void {
+    noteH264Output();
     if (!m_h264Renderer) return;
     if (!m_loggedFirstDecodedH264Frame) {
         m_loggedFirstDecodedH264Frame = true;
@@ -609,6 +640,7 @@ auto AndroidAutoFacade::setupEventBusConnections() -> void {
             &AndroidAutoFacade::onDecodedH264Frame);
         connect(m_h264Decoder.get(), &H264VideoDecoder::videoFrameReady, this,
             [this](const QVideoFrame& frame) {
+                noteH264Output();
                 if (!m_h264Renderer) return;
                 if (!m_loggedFirstDecodedH264Frame) {
                     m_loggedFirstDecodedH264Frame = true;
