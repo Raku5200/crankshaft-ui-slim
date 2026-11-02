@@ -271,6 +271,23 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
                              coreClient, [publishAudioOutput](const QString&) {
                                  publishAudioOutput();
                              });
+
+            // Car IBus: OBC polling and which car controls to use.
+            const auto publishIbusSettings = [coreClient, &preferencesFacade]() {
+                coreClient->publish(
+                    QStringLiteral("ibus/settings"),
+                    QJsonObject{{QStringLiteral("pollObc"), preferencesFacade.ibusPollObc()},
+                                {QStringLiteral("bmbtInput"), preferencesFacade.ibusBmbtInput()},
+                                {QStringLiteral("mflInput"), preferencesFacade.ibusMflInput()}});
+            };
+            QObject::connect(coreClient, &CoreClient::coreConnected, &preferencesFacade,
+                             publishIbusSettings);
+            for (const auto signal : {&PreferencesFacade::ibusPollObcChanged,
+                                      &PreferencesFacade::ibusBmbtInputChanged,
+                                      &PreferencesFacade::ibusMflInputChanged}) {
+                QObject::connect(&preferencesFacade, signal, coreClient,
+                                 [publishIbusSettings](bool) { publishIbusSettings(); });
+            }
         }
 
         if (!audioBridge.initialize()) {

@@ -31,6 +31,9 @@ const char* KEY_AA_FULLSCREEN_DELAY_SECONDS =
 const char* KEY_AUDIO_VOLUME = "slim_ui.audio.volume";
 const char* KEY_AUDIO_OUTPUT_TARGET = "slim_ui.audio.outputTarget";
 const char* KEY_AUDIO_OUTPUT_DEVICE = "slim_ui.audio.outputDevice";
+const char* KEY_IBUSPOLLOBC = "slim_ui.ibus.pollObc";
+const char* KEY_IBUSBMBTINPUT = "slim_ui.ibus.bmbtInput";
+const char* KEY_IBUSMFLINPUT = "slim_ui.ibus.mflInput";
 const char* KEY_CONNECTION_PREFERENCE = "slim_ui.connection.preference";
 const char* KEY_THEME_MODE = "slim_ui.theme.mode";
 const char* KEY_LAST_CONNECTED_DEVICE_ID = "slim_ui.device.lastConnected";
@@ -240,6 +243,9 @@ auto PreferencesFacade::loadSettings() -> void {
     m_audioOutputTarget =
         loadSetting(KEY_AUDIO_OUTPUT_TARGET, QStringLiteral("HEAD_UNIT")).toString();
     m_audioOutputDevice = loadSetting(KEY_AUDIO_OUTPUT_DEVICE, QString()).toString();
+    m_ibusPollObc = loadSetting(KEY_IBUSPOLLOBC, false).toBool();
+    m_ibusBmbtInput = loadSetting(KEY_IBUSBMBTINPUT, true).toBool();
+    m_ibusMflInput = loadSetting(KEY_IBUSMFLINPUT, true).toBool();
     m_connectionPreference =
         loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("AUTO")).toString();
     m_themeMode = loadSetting(KEY_THEME_MODE, QStringLiteral("DARK")).toString();
@@ -285,6 +291,9 @@ auto PreferencesFacade::saveSettings() -> void {
     saveSetting(KEY_AUDIO_VOLUME, m_audioVolume);
     saveSetting(KEY_AUDIO_OUTPUT_TARGET, m_audioOutputTarget);
     saveSetting(KEY_AUDIO_OUTPUT_DEVICE, m_audioOutputDevice);
+    saveSetting(KEY_IBUSPOLLOBC, m_ibusPollObc);
+    saveSetting(KEY_IBUSBMBTINPUT, m_ibusBmbtInput);
+    saveSetting(KEY_IBUSMFLINPUT, m_ibusMflInput);
     saveSetting(KEY_CONNECTION_PREFERENCE, m_connectionPreference);
     saveSetting(KEY_THEME_MODE, m_themeMode);
     saveSetting(KEY_LAST_CONNECTED_DEVICE_ID, m_lastConnectedDeviceId);
@@ -292,6 +301,39 @@ auto PreferencesFacade::saveSettings() -> void {
     Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
                                    QStringLiteral("Settings saved successfully"));
     emit settingsSaved();
+}
+
+auto PreferencesFacade::setIbusPollObc(bool value) -> void {
+    if (value == m_ibusPollObc) {
+        return;
+    }
+    m_ibusPollObc = value;
+    saveSetting(KEY_IBUSPOLLOBC, m_ibusPollObc);
+    Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
+                                   QStringLiteral("ibusPollObc changed to %1").arg(value));
+    emit ibusPollObcChanged(m_ibusPollObc);
+}
+
+auto PreferencesFacade::setIbusBmbtInput(bool value) -> void {
+    if (value == m_ibusBmbtInput) {
+        return;
+    }
+    m_ibusBmbtInput = value;
+    saveSetting(KEY_IBUSBMBTINPUT, m_ibusBmbtInput);
+    Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
+                                   QStringLiteral("ibusBmbtInput changed to %1").arg(value));
+    emit ibusBmbtInputChanged(m_ibusBmbtInput);
+}
+
+auto PreferencesFacade::setIbusMflInput(bool value) -> void {
+    if (value == m_ibusMflInput) {
+        return;
+    }
+    m_ibusMflInput = value;
+    saveSetting(KEY_IBUSMFLINPUT, m_ibusMflInput);
+    Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
+                                   QStringLiteral("ibusMflInput changed to %1").arg(value));
+    emit ibusMflInputChanged(m_ibusMflInput);
 }
 
 auto PreferencesFacade::resetToDefaults() -> void {
@@ -304,6 +346,9 @@ auto PreferencesFacade::resetToDefaults() -> void {
     m_audioVolume = DEFAULT_VOLUME;
     m_audioOutputTarget = QStringLiteral("HEAD_UNIT");
     m_audioOutputDevice.clear();
+    m_ibusPollObc = false;
+    m_ibusBmbtInput = true;
+    m_ibusMflInput = true;
     m_connectionPreference = QStringLiteral("AUTO");
     m_themeMode = QStringLiteral("DARK");
     m_lastConnectedDeviceId.clear();
@@ -316,6 +361,9 @@ auto PreferencesFacade::resetToDefaults() -> void {
     emit audioVolumeChanged(m_audioVolume);
     emit audioOutputTargetChanged(m_audioOutputTarget);
     emit audioOutputDeviceChanged(m_audioOutputDevice);
+    emit ibusPollObcChanged(m_ibusPollObc);
+    emit ibusBmbtInputChanged(m_ibusBmbtInput);
+    emit ibusMflInputChanged(m_ibusMflInput);
     emit connectionPreferenceChanged(m_connectionPreference);
     emit themeModeChanged(m_themeMode);
     emit lastConnectedDeviceIdChanged(m_lastConnectedDeviceId);

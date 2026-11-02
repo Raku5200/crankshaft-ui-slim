@@ -232,6 +232,7 @@ qt_add_resources(crankshaft-ui-slim "qml"
         qml/settings/AudioSettingsTab.qml
         qml/settings/ConnectionSettingsTab.qml
         qml/settings/BluetoothSettingsTab.qml
+        qml/settings/CarSettingsTab.qml
         qml/assets/icon-settings-material.svg
         qml/assets/icon-settings-material-dark.svg
         qml/mk4/qmldir

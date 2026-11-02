@@ -57,6 +57,13 @@ class PreferencesFacade : public QObject {
     /// Where Android Auto audio plays: "HEAD_UNIT" (this unit) or "PHONE" (the phone keeps it).
     Q_PROPERTY(QString audioOutputTarget READ audioOutputTarget WRITE setAudioOutputTarget NOTIFY
                    audioOutputTargetChanged)
+    // Car IBus
+    /// Ask the cluster for OBC values every 10 s (off: only listen; the factory nav/monitor already asks).
+    Q_PROPERTY(bool ibusPollObc READ ibusPollObc WRITE setIbusPollObc NOTIFY ibusPollObcChanged)
+    /// On-board monitor (BMBT) dial and buttons control Crankshaft and Android Auto.
+    Q_PROPERTY(bool ibusBmbtInput READ ibusBmbtInput WRITE setIbusBmbtInput NOTIFY ibusBmbtInputChanged)
+    /// Steering wheel (MFL) buttons control Android Auto.
+    Q_PROPERTY(bool ibusMflInput READ ibusMflInput WRITE setIbusMflInput NOTIFY ibusMflInputChanged)
     /// Sound output chosen by the user (PipeWire sink name); empty = system default.
     Q_PROPERTY(QString audioOutputDevice READ audioOutputDevice WRITE setAudioOutputDevice NOTIFY
                    audioOutputDeviceChanged)
@@ -97,6 +104,9 @@ public:
     [[nodiscard]] auto audioVolume() const -> int;
     [[nodiscard]] auto audioOutputTarget() const -> QString;
     [[nodiscard]] auto audioOutputDevice() const -> QString;
+    [[nodiscard]] auto ibusPollObc() const -> bool { return m_ibusPollObc; }
+    [[nodiscard]] auto ibusBmbtInput() const -> bool { return m_ibusBmbtInput; }
+    [[nodiscard]] auto ibusMflInput() const -> bool { return m_ibusMflInput; }
     [[nodiscard]] auto connectionPreference() const -> QString;
     [[nodiscard]] auto themeMode() const -> QString;
     [[nodiscard]] auto lastConnectedDeviceId() const -> QString;
@@ -108,6 +118,9 @@ public:
     void setAudioVolume(int value);
     void setAudioOutputTarget(const QString& target);
     void setAudioOutputDevice(const QString& device);
+    void setIbusPollObc(bool value);
+    void setIbusBmbtInput(bool value);
+    void setIbusMflInput(bool value);
     void setConnectionPreference(const QString& mode);
     auto setThemeMode(const QString& mode) -> void;
     auto setLastConnectedDeviceId(const QString& deviceId) -> void;
@@ -128,6 +141,9 @@ signals:
     void audioVolumeChanged(int value);
     void audioOutputTargetChanged(const QString& target);
     void audioOutputDeviceChanged(const QString& device);
+    void ibusPollObcChanged(bool value);
+    void ibusBmbtInputChanged(bool value);
+    void ibusMflInputChanged(bool value);
     void connectionPreferenceChanged(const QString& mode);
     void themeModeChanged(const QString& mode);
     void lastConnectedDeviceIdChanged(const QString& deviceId);
@@ -188,6 +204,9 @@ private:
     int m_audioVolume = 50;                                  ///< Default 50%
     QString m_audioOutputTarget = QStringLiteral("HEAD_UNIT");
     QString m_audioOutputDevice;  ///< Empty = system default output
+    bool m_ibusPollObc = false;
+    bool m_ibusBmbtInput = true;
+    bool m_ibusMflInput = true;
     QString m_connectionPreference = QStringLiteral("USB");  ///< Default USB
     QString m_themeMode = QStringLiteral("DARK");            ///< Default dark
     QString m_lastConnectedDeviceId;

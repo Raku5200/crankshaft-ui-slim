@@ -84,6 +84,11 @@ ApplicationWindow {
         function onInputReceived(event) {
             if (!root.mk4Enabled)
                 return
+            // Core also filters these; this covers events already on their way.
+            if (event.source === "bmbt" && !_preferencesFacade.ibusBmbtInput)
+                return
+            if (event.source === "mfl" && !_preferencesFacade.ibusMflInput)
+                return
             if (event.button === "menu" && event.state === "press") {
                 if (mk4Shell.visible)
                     mk4Shell.menuButton()
