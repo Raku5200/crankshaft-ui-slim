@@ -9,6 +9,8 @@
 #include "H264VideoDecoder.h"
 
 #include <gst/app/gstappsrc.h>
+#include <algorithm>
+#include <thread>
 #include <gst/app/gstappsink.h>
 #include <gst/video/video.h>
 
@@ -191,10 +193,11 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
     m_appsrc = gst_element_factory_make("appsrc", "h264-source");
     m_h264parse = gst_element_factory_make("h264parse", "h264-parse");
     m_decodebin = gst_element_factory_make(decoderElementName, "h264-decoder");
+    m_decodedQueue = gst_element_factory_make("queue", "decoded-queue");
     m_videoconvert = gst_element_factory_make("videoconvert", "video-convert");
     m_appsink = gst_element_factory_make("appsink", "video-sink");
 
-    if (!m_pipeline || !m_appsrc || !m_h264parse || !m_decodebin ||
+    if (!m_pipeline || !m_appsrc || !m_h264parse || !m_decodebin || !m_decodedQueue ||
         !m_videoconvert || !m_appsink) {
         Logger::instance().errorContext(
             "H264VideoDecoder", "Required GStreamer H.264 elements are unavailable",
@@ -203,6 +206,7 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
              {"appsrc", m_appsrc != nullptr},
              {"h264parse", m_h264parse != nullptr},
              {"decoder_element", m_decodebin != nullptr},
+             {"decoded_queue", m_decodedQueue != nullptr},
              {"videoconvert", m_videoconvert != nullptr},
              {"appsink", m_appsink != nullptr},
              {"platform_model", m_platformModel}});
@@ -231,6 +235,25 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
 
     g_object_set(G_OBJECT(m_h264parse), "config-interval", -1, nullptr);
 
+    // Keep at most one decoded frame waiting for the colour conversion and
+    // drop the older one when a newer arrives. On the Pi Zero 2 W the
+    // software I420 -> BGRA conversion manages ~17 fps, slower than the
+    // phone sends while things move, and without this the frames queued up
+    // until the picture ran ~6 s behind (touch looked slow). Dropping here is
+    // safe: these frames are already decoded, nothing references them.
+    g_object_set(G_OBJECT(m_decodedQueue),
+                 "max-size-buffers", 1,
+                 "max-size-bytes", 0,
+                 "max-size-time", static_cast<guint64>(0),
+                 nullptr);
+    gst_util_set_object_arg(G_OBJECT(m_decodedQueue), "leaky", "downstream");
+
+    // Spread the conversion over the cores and skip dithering (8-bit in,
+    // 8-bit out: it only costs time).
+    const guint cores = std::max(1u, std::min(4u, std::thread::hardware_concurrency()));
+    g_object_set(G_OBJECT(m_videoconvert), "n-threads", cores, nullptr);
+    gst_util_set_object_arg(G_OBJECT(m_videoconvert), "dither", "none");
+
     // In YUV mode the caps accept what the decoders produce natively
     // (avdec_h264: I420, v4l2h264dec: NV12/I420), so videoconvert runs in
     // passthrough and costs nothing.
@@ -248,10 +271,10 @@ auto H264VideoDecoder::buildPipeline(const char* decoderElementName, bool isHard
     gst_caps_unref(sinkCaps);
 
     gst_bin_add_many(GST_BIN(m_pipeline), m_appsrc, m_h264parse, m_decodebin,
-                     m_videoconvert, m_appsink, nullptr);
+                     m_decodedQueue, m_videoconvert, m_appsink, nullptr);
 
-    if (!gst_element_link_many(m_appsrc, m_h264parse, m_decodebin, m_videoconvert,
-                               m_appsink, nullptr)) {
+    if (!gst_element_link_many(m_appsrc, m_h264parse, m_decodebin, m_decodedQueue,
+                               m_videoconvert, m_appsink, nullptr)) {
         Logger::instance().errorContext("H264VideoDecoder", "Failed to link GStreamer H.264 pipeline",
                                          {{"decoder", decoderElementName}});
         if (!isHardwareDecoder) {
@@ -387,7 +410,7 @@ auto H264VideoDecoder::onDecodePadAdded(GstElement*, GstPad* pad, gpointer userD
     const GstStructure* structure = gst_caps_get_structure(caps, 0);
     const gchar* name = gst_structure_get_name(structure);
     if (g_str_has_prefix(name, "video/")) {
-        GstPad* sinkPad = gst_element_get_static_pad(self->m_videoconvert, "sink");
+        GstPad* sinkPad = gst_element_get_static_pad(self->m_decodedQueue, "sink");
         if (sinkPad && !gst_pad_is_linked(sinkPad)) {
             gst_pad_link(pad, sinkPad);
         }
@@ -716,6 +739,7 @@ auto H264VideoDecoder::teardownPipeline() -> void {
     m_appsrc = nullptr;
     m_h264parse = nullptr;
     m_decodebin = nullptr;
+    m_decodedQueue = nullptr;
     m_videoconvert = nullptr;
     m_appsink = nullptr;
 }

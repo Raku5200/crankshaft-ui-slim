@@ -65,6 +65,7 @@ private:
     GstElement* m_appsrc{nullptr};
     GstElement* m_h264parse{nullptr};
     GstElement* m_decodebin{nullptr};
+    GstElement* m_decodedQueue{nullptr};
     GstElement* m_videoconvert{nullptr};
     GstElement* m_appsink{nullptr};
     GstBus* m_bus{nullptr};
