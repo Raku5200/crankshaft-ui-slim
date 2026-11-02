@@ -242,6 +242,7 @@ qt_add_resources(crankshaft-ui-slim "qml"
         qml/mk4/Mk4Group.qml
         qml/mk4/Mk4Item.qml
         qml/mk4/Mk4InfoBar.qml
+        qml/mk4/ParkingScreen.qml
         qml/mk4/Mk4Shell.qml
         qml/mk4/MockIbus.qml
         qml/mk4/MenuScreen.qml

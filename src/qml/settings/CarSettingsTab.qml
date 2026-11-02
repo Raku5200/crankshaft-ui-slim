@@ -107,6 +107,18 @@ Item {
 
             Components.SettingsCard {
                 Layout.fillWidth: true
+                title: qsTr("Parking sensors", "SettingsPanel")
+
+                ToggleRow {
+                    title: qsTr("Show parking sensors when reversing", "SettingsPanel")
+                    note: qsTr("Opens over Android Auto in reverse (or when PDC switches on) and asks the PDC module for distances only then.", "SettingsPanel")
+                    checked: root.preferencesFacade && root.preferencesFacade.ibusParkingSensors
+                    onToggled: (on) => { if (root.preferencesFacade) root.preferencesFacade.ibusParkingSensors = on }
+                }
+            }
+
+            Components.SettingsCard {
+                Layout.fillWidth: true
                 title: qsTr("Car controls", "SettingsPanel")
 
                 ToggleRow {

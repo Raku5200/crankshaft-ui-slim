@@ -35,6 +35,7 @@ const char* KEY_IBUSPOLLOBC = "slim_ui.ibus.pollObc";
 const char* KEY_IBUSBMBTINPUT = "slim_ui.ibus.bmbtInput";
 const char* KEY_IBUSMFLINPUT = "slim_ui.ibus.mflInput";
 const char* KEY_IBUSCLUSTERTEXT = "slim_ui.ibus.clusterText";
+const char* KEY_IBUSPARKINGSENSORS = "slim_ui.ibus.parkingSensors";
 const char* KEY_CONNECTION_PREFERENCE = "slim_ui.connection.preference";
 const char* KEY_THEME_MODE = "slim_ui.theme.mode";
 const char* KEY_LAST_CONNECTED_DEVICE_ID = "slim_ui.device.lastConnected";
@@ -248,6 +249,7 @@ auto PreferencesFacade::loadSettings() -> void {
     m_ibusBmbtInput = loadSetting(KEY_IBUSBMBTINPUT, true).toBool();
     m_ibusMflInput = loadSetting(KEY_IBUSMFLINPUT, true).toBool();
     m_ibusClusterText = loadSetting(KEY_IBUSCLUSTERTEXT, true).toBool();
+    m_ibusParkingSensors = loadSetting(KEY_IBUSPARKINGSENSORS, true).toBool();
     m_connectionPreference =
         loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("AUTO")).toString();
     m_themeMode = loadSetting(KEY_THEME_MODE, QStringLiteral("DARK")).toString();
@@ -297,6 +299,7 @@ auto PreferencesFacade::saveSettings() -> void {
     saveSetting(KEY_IBUSBMBTINPUT, m_ibusBmbtInput);
     saveSetting(KEY_IBUSMFLINPUT, m_ibusMflInput);
     saveSetting(KEY_IBUSCLUSTERTEXT, m_ibusClusterText);
+    saveSetting(KEY_IBUSPARKINGSENSORS, m_ibusParkingSensors);
     saveSetting(KEY_CONNECTION_PREFERENCE, m_connectionPreference);
     saveSetting(KEY_THEME_MODE, m_themeMode);
     saveSetting(KEY_LAST_CONNECTED_DEVICE_ID, m_lastConnectedDeviceId);
@@ -350,6 +353,17 @@ auto PreferencesFacade::setIbusClusterText(bool value) -> void {
     emit ibusClusterTextChanged(m_ibusClusterText);
 }
 
+auto PreferencesFacade::setIbusParkingSensors(bool value) -> void {
+    if (value == m_ibusParkingSensors) {
+        return;
+    }
+    m_ibusParkingSensors = value;
+    saveSetting(KEY_IBUSPARKINGSENSORS, m_ibusParkingSensors);
+    Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
+                                   QStringLiteral("ibusParkingSensors changed to %1").arg(value));
+    emit ibusParkingSensorsChanged(m_ibusParkingSensors);
+}
+
 auto PreferencesFacade::resetToDefaults() -> void {
     Logger::instance().infoContext(QStringLiteral("PreferencesFacade"),
                                    QStringLiteral("Resetting settings to factory defaults"));
@@ -364,6 +378,7 @@ auto PreferencesFacade::resetToDefaults() -> void {
     m_ibusBmbtInput = true;
     m_ibusMflInput = true;
     m_ibusClusterText = true;
+    m_ibusParkingSensors = true;
     m_connectionPreference = QStringLiteral("AUTO");
     m_themeMode = QStringLiteral("DARK");
     m_lastConnectedDeviceId.clear();
@@ -380,6 +395,7 @@ auto PreferencesFacade::resetToDefaults() -> void {
     emit ibusBmbtInputChanged(m_ibusBmbtInput);
     emit ibusMflInputChanged(m_ibusMflInput);
     emit ibusClusterTextChanged(m_ibusClusterText);
+    emit ibusParkingSensorsChanged(m_ibusParkingSensors);
     emit connectionPreferenceChanged(m_connectionPreference);
     emit themeModeChanged(m_themeMode);
     emit lastConnectedDeviceIdChanged(m_lastConnectedDeviceId);

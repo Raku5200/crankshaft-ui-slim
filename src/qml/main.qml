@@ -1382,6 +1382,24 @@ ApplicationWindow {
             displayRotation: root.displayRotation
             onClosed: navigationController.closeSettings()
         }
+
+        // Parking sensors while reversing (IBus PDC). Above everything,
+        // including Android Auto and the menus; ✕ hides it until the next
+        // time reverse is selected.
+        Mk4.ParkingScreen {
+            id: parkingScreen
+            property bool dismissed: false
+            readonly property bool wanted: typeof _ibus !== "undefined" && !!_ibus.parking
+                                           && _ibus.parking.visible === true
+                                           && (!_preferencesFacade || _preferencesFacade.ibusParkingSensors)
+            onWantedChanged: if (!wanted) dismissed = false
+            anchors.fill: parent
+            z: 50
+            visible: wanted && !dismissed
+            parking: typeof _ibus !== "undefined" && _ibus.parking ? _ibus.parking : ({})
+            distanceUnit: ibusData.distanceUnit
+            onCloseRequested: dismissed = true
+        }
     }
 }
 

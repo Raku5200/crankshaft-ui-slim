@@ -40,6 +40,9 @@ class IbusFacade : public QObject {
     Q_PROPERTY(QVariantMap status READ status NOTIFY statusChanged)
     /// time, outsideTemp, consumption1, range, avgSpeed, speedKmh, rpm, units...
     Q_PROPERTY(QVariantMap obc READ obc NOTIFY obcChanged)
+    /// Parking sensors (PDC) while reversing: visible, reverse, active,
+    /// frontLeft..rearRight in cm (255 = nothing in range, -1 = unknown).
+    Q_PROPERTY(QVariantMap parking READ parking NOTIFY parkingChanged)
 
   public:
     explicit IbusFacade(CoreClient* coreClient, QObject* parent = nullptr)
@@ -60,6 +63,7 @@ class IbusFacade : public QObject {
     }
     [[nodiscard]] auto status() const -> QVariantMap { return m_status; }
     [[nodiscard]] auto obc() const -> QVariantMap { return m_obc; }
+    [[nodiscard]] auto parking() const -> QVariantMap { return m_parking; }
 
     /// GT 0x41 to the cluster: property 0x04 consumption 1, 0x0A avg speed,
     /// 0x09 limit, 0x0E timer...; control 0x04 on, 0x08 off, 0x10 reset, 0x20 set.
@@ -99,6 +103,9 @@ class IbusFacade : public QObject {
         } else if (topic == QStringLiteral("ibus/obc")) {
             m_obc = payload;
             emit obcChanged();
+        } else if (topic == QStringLiteral("ibus/parking")) {
+            m_parking = payload;
+            emit parkingChanged();
         } else if (topic == QStringLiteral("ibus/input")) {
             emit inputReceived(payload);
         }
@@ -107,6 +114,7 @@ class IbusFacade : public QObject {
   signals:
     void statusChanged();
     void obcChanged();
+    void parkingChanged();
     /// {kind: button|dial, source: bmbt|mfl, button, state: press|hold|release, steps}
     void inputReceived(const QVariantMap& event);
 
@@ -123,5 +131,6 @@ class IbusFacade : public QObject {
     QPointer<CoreClient> m_coreClient;
     QVariantMap m_status;
     QVariantMap m_obc;
+    QVariantMap m_parking;
     QString m_inputTarget = QStringLiteral("android-auto");
 };

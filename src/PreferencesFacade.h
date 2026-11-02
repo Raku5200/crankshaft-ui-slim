@@ -65,6 +65,7 @@ class PreferencesFacade : public QObject {
     /// Steering wheel (MFL) buttons control Android Auto.
     Q_PROPERTY(bool ibusMflInput READ ibusMflInput WRITE setIbusMflInput NOTIFY ibusMflInputChanged)
     Q_PROPERTY(bool ibusClusterText READ ibusClusterText WRITE setIbusClusterText NOTIFY ibusClusterTextChanged)
+    Q_PROPERTY(bool ibusParkingSensors READ ibusParkingSensors WRITE setIbusParkingSensors NOTIFY ibusParkingSensorsChanged)
     /// Sound output chosen by the user (PipeWire sink name); empty = system default.
     Q_PROPERTY(QString audioOutputDevice READ audioOutputDevice WRITE setAudioOutputDevice NOTIFY
                    audioOutputDeviceChanged)
@@ -109,6 +110,7 @@ public:
     [[nodiscard]] auto ibusBmbtInput() const -> bool { return m_ibusBmbtInput; }
     [[nodiscard]] auto ibusMflInput() const -> bool { return m_ibusMflInput; }
     [[nodiscard]] auto ibusClusterText() const -> bool { return m_ibusClusterText; }
+    [[nodiscard]] auto ibusParkingSensors() const -> bool { return m_ibusParkingSensors; }
     [[nodiscard]] auto connectionPreference() const -> QString;
     [[nodiscard]] auto themeMode() const -> QString;
     [[nodiscard]] auto lastConnectedDeviceId() const -> QString;
@@ -124,6 +126,7 @@ public:
     void setIbusBmbtInput(bool value);
     void setIbusMflInput(bool value);
     void setIbusClusterText(bool value);
+    void setIbusParkingSensors(bool value);
     void setConnectionPreference(const QString& mode);
     auto setThemeMode(const QString& mode) -> void;
     auto setLastConnectedDeviceId(const QString& deviceId) -> void;
@@ -148,6 +151,7 @@ signals:
     void ibusBmbtInputChanged(bool value);
     void ibusMflInputChanged(bool value);
     void ibusClusterTextChanged(bool value);
+    void ibusParkingSensorsChanged(bool value);
     void connectionPreferenceChanged(const QString& mode);
     void themeModeChanged(const QString& mode);
     void lastConnectedDeviceIdChanged(const QString& deviceId);
@@ -212,6 +216,7 @@ private:
     bool m_ibusBmbtInput = true;
     bool m_ibusMflInput = true;
     bool m_ibusClusterText = true;
+    bool m_ibusParkingSensors = true;
     QString m_connectionPreference = QStringLiteral("USB");  ///< Default USB
     QString m_themeMode = QStringLiteral("DARK");            ///< Default dark
     QString m_lastConnectedDeviceId;

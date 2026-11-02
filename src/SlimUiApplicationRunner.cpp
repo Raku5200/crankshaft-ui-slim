@@ -279,14 +279,16 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
                     QJsonObject{{QStringLiteral("pollObc"), preferencesFacade.ibusPollObc()},
                                 {QStringLiteral("bmbtInput"), preferencesFacade.ibusBmbtInput()},
                                 {QStringLiteral("mflInput"), preferencesFacade.ibusMflInput()},
-                                {QStringLiteral("clusterText"), preferencesFacade.ibusClusterText()}});
+                                {QStringLiteral("clusterText"), preferencesFacade.ibusClusterText()},
+                                {QStringLiteral("parkingSensors"), preferencesFacade.ibusParkingSensors()}});
             };
             QObject::connect(coreClient, &CoreClient::coreConnected, &preferencesFacade,
                              publishIbusSettings);
             for (const auto signal : {&PreferencesFacade::ibusPollObcChanged,
                                       &PreferencesFacade::ibusBmbtInputChanged,
                                       &PreferencesFacade::ibusMflInputChanged,
-                                      &PreferencesFacade::ibusClusterTextChanged}) {
+                                      &PreferencesFacade::ibusClusterTextChanged,
+                                      &PreferencesFacade::ibusParkingSensorsChanged}) {
                 QObject::connect(&preferencesFacade, signal, coreClient,
                                  [publishIbusSettings](bool) { publishIbusSettings(); });
             }
