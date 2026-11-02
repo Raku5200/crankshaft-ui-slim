@@ -54,6 +54,12 @@ class PreferencesFacade : public QObject {
 
     // Audio settings
     Q_PROPERTY(int audioVolume READ audioVolume WRITE setAudioVolume NOTIFY audioVolumeChanged)
+    /// Where Android Auto audio plays: "HEAD_UNIT" (this unit) or "PHONE" (the phone keeps it).
+    Q_PROPERTY(QString audioOutputTarget READ audioOutputTarget WRITE setAudioOutputTarget NOTIFY
+                   audioOutputTargetChanged)
+    /// Sound output chosen by the user (PipeWire sink name); empty = system default.
+    Q_PROPERTY(QString audioOutputDevice READ audioOutputDevice WRITE setAudioOutputDevice NOTIFY
+                   audioOutputDeviceChanged)
 
     // Connection settings
     Q_PROPERTY(QString connectionPreference READ connectionPreference WRITE setConnectionPreference
@@ -89,6 +95,8 @@ public:
     [[nodiscard]] auto displayRotation() const -> int;
     [[nodiscard]] auto aaProjectionFullscreenDelaySeconds() const -> int;
     [[nodiscard]] auto audioVolume() const -> int;
+    [[nodiscard]] auto audioOutputTarget() const -> QString;
+    [[nodiscard]] auto audioOutputDevice() const -> QString;
     [[nodiscard]] auto connectionPreference() const -> QString;
     [[nodiscard]] auto themeMode() const -> QString;
     [[nodiscard]] auto lastConnectedDeviceId() const -> QString;
@@ -98,6 +106,8 @@ public:
     void setDisplayRotation(int value);
     void setAaProjectionFullscreenDelaySeconds(int value);
     void setAudioVolume(int value);
+    void setAudioOutputTarget(const QString& target);
+    void setAudioOutputDevice(const QString& device);
     void setConnectionPreference(const QString& mode);
     auto setThemeMode(const QString& mode) -> void;
     auto setLastConnectedDeviceId(const QString& deviceId) -> void;
@@ -116,6 +126,8 @@ signals:
     void displayRotationChanged(int value);
     void aaProjectionFullscreenDelaySecondsChanged(int value);
     void audioVolumeChanged(int value);
+    void audioOutputTargetChanged(const QString& target);
+    void audioOutputDeviceChanged(const QString& device);
     void connectionPreferenceChanged(const QString& mode);
     void themeModeChanged(const QString& mode);
     void lastConnectedDeviceIdChanged(const QString& deviceId);
@@ -174,6 +186,8 @@ private:
     int m_displayRotation = 0;                               ///< Default 0 degrees
     int m_aaProjectionFullscreenDelaySeconds = 0;            ///< 0 disables delayed fullscreen
     int m_audioVolume = 50;                                  ///< Default 50%
+    QString m_audioOutputTarget = QStringLiteral("HEAD_UNIT");
+    QString m_audioOutputDevice;  ///< Empty = system default output
     QString m_connectionPreference = QStringLiteral("USB");  ///< Default USB
     QString m_themeMode = QStringLiteral("DARK");            ///< Default dark
     QString m_lastConnectedDeviceId;

@@ -53,6 +53,7 @@
 #include "PreferencesFacade.h"
 #include <QJsonObject>
 #include "CoreClient.h"
+#include "AudioOutputManager.h"
 #include "ProjectionInfoFacade.h"
 #include "ServiceProvider.h"
 #include "TouchEventForwarder.h"
@@ -231,6 +232,45 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
                              });
         }
 
+        // Sound outputs (jack, HDMI, USB, Bluetooth) and where AA audio plays.
+        AudioOutputManager audioOutputs;
+        QObject::connect(&audioOutputs, &AudioOutputManager::ready, &preferencesFacade,
+                         [&audioOutputs, &preferencesFacade]() {
+                             // Restore the user's output if it is plugged in, and their volume.
+                             const QString wanted = preferencesFacade.audioOutputDevice();
+                             if (!wanted.isEmpty() && wanted != audioOutputs.currentOutput() &&
+                                 audioOutputs.hasOutput(wanted)) {
+                                 audioOutputs.selectOutput(wanted);
+                             }
+                             audioOutputs.setVolume(preferencesFacade.audioVolume());
+                         });
+        QObject::connect(&audioOutputs, &AudioOutputManager::outputSelected, &preferencesFacade,
+                         [&audioOutputs, &preferencesFacade](const QString& name) {
+                             preferencesFacade.setAudioOutputDevice(name);
+                             // Each output keeps its own volume; carry the slider's over.
+                             audioOutputs.setVolume(preferencesFacade.audioVolume());
+                         });
+        QObject::connect(&preferencesFacade, &PreferencesFacade::audioVolumeChanged,
+                         &audioOutputs, [&audioOutputs](int volume) {
+                             audioOutputs.setVolume(volume);
+                         });
+        audioOutputs.refresh();
+
+        if (CoreClient* coreClient = services.androidAutoService()) {
+            const auto publishAudioOutput = [coreClient, &preferencesFacade]() {
+                coreClient->publish(
+                    QStringLiteral("android-auto/audio-output"),
+                    QJsonObject{{QStringLiteral("target"),
+                                 preferencesFacade.audioOutputTarget().toLower()}});
+            };
+            QObject::connect(coreClient, &CoreClient::coreConnected, &preferencesFacade,
+                             publishAudioOutput);
+            QObject::connect(&preferencesFacade, &PreferencesFacade::audioOutputTargetChanged,
+                             coreClient, [publishAudioOutput](const QString&) {
+                                 publishAudioOutput();
+                             });
+        }
+
         if (!audioBridge.initialize()) {
             Logger::instance().warningContext(
                 "Main", "Audio initialization failed, continuing without audio");
@@ -257,6 +297,7 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
         engine.rootContext()->setContextProperty("_touchForwarder", &touchForwarder);
         engine.rootContext()->setContextProperty("_connectionStateMachine", &connectionStateMachine);
         engine.rootContext()->setContextProperty("_preferencesFacade", &preferencesFacade);
+        engine.rootContext()->setContextProperty("_audioOutputs", &audioOutputs);
         engine.rootContext()->setContextProperty("_errorHandler", &errorHandler);
         engine.rootContext()->setContextProperty("_touchDebugEnabled", touchDebugMode);
         engine.rootContext()->setContextProperty("_projectionInfo", &projectionInfo);

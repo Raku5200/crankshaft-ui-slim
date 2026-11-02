@@ -147,6 +147,8 @@ qt_add_executable(crankshaft-ui-slim
     CoreClient.h
     CoreClient.cpp
     ProjectionInfoFacade.h
+    AudioOutputManager.h
+    AudioOutputManager.cpp
 )
 target_compile_definitions(crankshaft-ui-slim PRIVATE CRANKSHAFT_AASDK_OLD_API)
 

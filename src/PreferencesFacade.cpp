@@ -29,6 +29,8 @@ const char* KEY_DISPLAY_ROTATION = "slim_ui.display.rotation";
 const char* KEY_AA_FULLSCREEN_DELAY_SECONDS =
     "slim_ui.display.aaFullscreenDelaySeconds";
 const char* KEY_AUDIO_VOLUME = "slim_ui.audio.volume";
+const char* KEY_AUDIO_OUTPUT_TARGET = "slim_ui.audio.outputTarget";
+const char* KEY_AUDIO_OUTPUT_DEVICE = "slim_ui.audio.outputDevice";
 const char* KEY_CONNECTION_PREFERENCE = "slim_ui.connection.preference";
 const char* KEY_THEME_MODE = "slim_ui.theme.mode";
 const char* KEY_LAST_CONNECTED_DEVICE_ID = "slim_ui.device.lastConnected";
@@ -60,6 +62,42 @@ auto PreferencesFacade::aaProjectionFullscreenDelaySeconds() const -> int {
 auto PreferencesFacade::audioVolume() const -> int { return m_audioVolume; }
 
 auto PreferencesFacade::connectionPreference() const -> QString { return m_connectionPreference; }
+
+auto PreferencesFacade::audioOutputTarget() const -> QString { return m_audioOutputTarget; }
+
+auto PreferencesFacade::audioOutputDevice() const -> QString { return m_audioOutputDevice; }
+
+auto PreferencesFacade::setAudioOutputTarget(const QString& target) -> void {
+    if (target == m_audioOutputTarget) {
+        return;
+    }
+    if (target != QStringLiteral("HEAD_UNIT") && target != QStringLiteral("PHONE")) {
+        Logger::instance().warningContext(
+            QStringLiteral("PreferencesFacade"),
+            QStringLiteral("Invalid audio output target: %1").arg(target));
+        return;
+    }
+
+    m_audioOutputTarget = target;
+    saveSetting(KEY_AUDIO_OUTPUT_TARGET, m_audioOutputTarget);
+    Logger::instance().infoContext(
+        QStringLiteral("PreferencesFacade"),
+        QStringLiteral("Audio output target changed to %1").arg(m_audioOutputTarget));
+    emit audioOutputTargetChanged(m_audioOutputTarget);
+}
+
+auto PreferencesFacade::setAudioOutputDevice(const QString& device) -> void {
+    if (device == m_audioOutputDevice) {
+        return;
+    }
+
+    m_audioOutputDevice = device;
+    saveSetting(KEY_AUDIO_OUTPUT_DEVICE, m_audioOutputDevice);
+    Logger::instance().infoContext(
+        QStringLiteral("PreferencesFacade"),
+        QStringLiteral("Audio output device changed to %1").arg(m_audioOutputDevice));
+    emit audioOutputDeviceChanged(m_audioOutputDevice);
+}
 
 auto PreferencesFacade::themeMode() const -> QString { return m_themeMode; }
 
@@ -199,6 +237,9 @@ auto PreferencesFacade::loadSettings() -> void {
     m_aaProjectionFullscreenDelaySeconds = validateFullscreenDelaySeconds(
         loadSetting(KEY_AA_FULLSCREEN_DELAY_SECONDS, DEFAULT_AA_FULLSCREEN_DELAY_SECONDS).toInt());
     m_audioVolume = validatePercentage(loadSetting(KEY_AUDIO_VOLUME, DEFAULT_VOLUME).toInt());
+    m_audioOutputTarget =
+        loadSetting(KEY_AUDIO_OUTPUT_TARGET, QStringLiteral("HEAD_UNIT")).toString();
+    m_audioOutputDevice = loadSetting(KEY_AUDIO_OUTPUT_DEVICE, QString()).toString();
     m_connectionPreference =
         loadSetting(KEY_CONNECTION_PREFERENCE, QStringLiteral("AUTO")).toString();
     m_themeMode = loadSetting(KEY_THEME_MODE, QStringLiteral("DARK")).toString();
@@ -242,6 +283,8 @@ auto PreferencesFacade::saveSettings() -> void {
     saveSetting(KEY_DISPLAY_ROTATION, m_displayRotation);
     saveSetting(KEY_AA_FULLSCREEN_DELAY_SECONDS, m_aaProjectionFullscreenDelaySeconds);
     saveSetting(KEY_AUDIO_VOLUME, m_audioVolume);
+    saveSetting(KEY_AUDIO_OUTPUT_TARGET, m_audioOutputTarget);
+    saveSetting(KEY_AUDIO_OUTPUT_DEVICE, m_audioOutputDevice);
     saveSetting(KEY_CONNECTION_PREFERENCE, m_connectionPreference);
     saveSetting(KEY_THEME_MODE, m_themeMode);
     saveSetting(KEY_LAST_CONNECTED_DEVICE_ID, m_lastConnectedDeviceId);
@@ -259,6 +302,8 @@ auto PreferencesFacade::resetToDefaults() -> void {
     m_displayRotation = DEFAULT_ROTATION;
     m_aaProjectionFullscreenDelaySeconds = DEFAULT_AA_FULLSCREEN_DELAY_SECONDS;
     m_audioVolume = DEFAULT_VOLUME;
+    m_audioOutputTarget = QStringLiteral("HEAD_UNIT");
+    m_audioOutputDevice.clear();
     m_connectionPreference = QStringLiteral("AUTO");
     m_themeMode = QStringLiteral("DARK");
     m_lastConnectedDeviceId.clear();
@@ -269,6 +314,8 @@ auto PreferencesFacade::resetToDefaults() -> void {
     emit displayRotationChanged(m_displayRotation);
     emit aaProjectionFullscreenDelaySecondsChanged(m_aaProjectionFullscreenDelaySeconds);
     emit audioVolumeChanged(m_audioVolume);
+    emit audioOutputTargetChanged(m_audioOutputTarget);
+    emit audioOutputDeviceChanged(m_audioOutputDevice);
     emit connectionPreferenceChanged(m_connectionPreference);
     emit themeModeChanged(m_themeMode);
     emit lastConnectedDeviceIdChanged(m_lastConnectedDeviceId);
@@ -385,6 +432,16 @@ auto PreferencesFacade::detectAndRecoverCorruption() -> QString {
                 .arg(m_connectionPreference));
         m_connectionPreference = QStringLiteral("AUTO");
         recoveredFields << QStringLiteral("connectionPreference");
+    }
+
+    if (m_audioOutputTarget != QStringLiteral("HEAD_UNIT") &&
+        m_audioOutputTarget != QStringLiteral("PHONE")) {
+        Logger::instance().warningContext(
+            QStringLiteral("PreferencesFacade"),
+            QStringLiteral("Corrupted audio output target: %1, resetting to default")
+                .arg(m_audioOutputTarget));
+        m_audioOutputTarget = QStringLiteral("HEAD_UNIT");
+        recoveredFields << QStringLiteral("audioOutputTarget");
     }
 
     if (m_themeMode != QStringLiteral("LIGHT") && m_themeMode != QStringLiteral("DARK")) {
