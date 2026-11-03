@@ -17,6 +17,12 @@ QtObject {
         const v = obc[key]
         return v !== undefined && v !== "" ? String(v) : "--"
     }
+    // The cluster puts the unit inside the text ("103 KM", "6.6 KM/L").
+    // The screens show the unit separately, so drop it from the value.
+    function liveValue(key) {
+        const t = liveText(key).trim().replace(/\s*[A-Za-z][A-Za-z\/0-9]*$/, "").trim()
+        return t !== "" ? t : "--"
+    }
     // Numbers the cluster has not sent yet are -999 (shown as "--").
     function liveInt(key) {
         const v = obc[key]
@@ -58,13 +64,13 @@ QtObject {
     readonly property string time: liveConnected ? liveText("time") : demoTime            // 0x01
     readonly property string date: liveConnected ? liveText("date") : demoDate            // 0x02
     readonly property string outsideTemp: liveConnected ? liveText("outsideTemp") : demoOutsideTemp // 0x03
-    readonly property string consumption1: liveConnected ? liveText("consumption1") : demoConsumption1 // 0x04
-    readonly property string consumption2: liveConnected ? liveText("consumption2") : demoConsumption2 // 0x05
-    readonly property string range: liveConnected ? liveText("range") : demoRange         // 0x06
-    readonly property string distance: liveConnected ? liveText("distance") : demoDistance // 0x07
+    readonly property string consumption1: liveConnected ? liveValue("consumption1") : demoConsumption1 // 0x04
+    readonly property string consumption2: liveConnected ? liveValue("consumption2") : demoConsumption2 // 0x05
+    readonly property string range: liveConnected ? liveValue("range") : demoRange         // 0x06
+    readonly property string distance: liveConnected ? liveValue("distance") : demoDistance // 0x07
     readonly property string arrival: liveConnected ? liveText("arrival") : demoArrival   // 0x08
-    readonly property string limit: liveConnected ? liveText("limit") : demoLimit         // 0x09
-    readonly property string avgSpeed: liveConnected ? liveText("avgSpeed") : demoAvgSpeed // 0x0a
+    readonly property string limit: liveConnected ? liveValue("limit") : demoLimit         // 0x09
+    readonly property string avgSpeed: liveConnected ? liveValue("avgSpeed") : demoAvgSpeed // 0x0a
     readonly property string timer: liveConnected ? liveText("timer") : demoTimer         // 0x0e
 
     // OBC status flags (from 0x2a "OBC Status"; not read from the car yet)
