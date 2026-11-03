@@ -16,12 +16,18 @@ Mk4Screen {
         anchors.leftMargin: 26; anchors.rightMargin: 26; anchors.topMargin: 8
         columns: 2
         columnSpacing: 40
-        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
             label: "Range"; value: obc.ibus.range; unit: obc.ibus.distanceUnit }
-        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
+            label: "Speed"; value: obc.ibus.shown(obc.ibus.speedKmh); unit: "km/h" }
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
+            label: "Out. temp."; value: obc.ibus.outsideTemp; unit: obc.ibus.temperatureUnit }
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
+            label: "Eng. speed"; value: obc.ibus.shown(obc.ibus.rpm); unit: "rpm" }
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
             label: "Arrival"; value: obc.ibus.arrivalShown }
-        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 46
-            label: "Out. temp."; value: obc.ibus.outsideTemp }
+        Mk4Item { screen: obc; selectable: false; width: (info.width - 40) / 2; height: 42
+            label: "Coolant"; value: obc.ibus.shown(obc.ibus.coolantC) + "°"; unit: "C" }
     }
 
     Row {

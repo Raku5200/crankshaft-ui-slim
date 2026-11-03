@@ -2,7 +2,7 @@ import QtQuick
 import "."
 
 // MK4-style strip shown along the bottom of Android Auto: MENU button, the
-// on-board computer values (range, consumption 1 and 2) and the cluster
+// on-board computer values (range, consumption 1 and 2, outside temp) and the cluster
 // clock. Turn-by-turn and the song are on the
 // instrument cluster (IKE) instead.
 Mk4Bar {
@@ -38,20 +38,21 @@ Mk4Bar {
     // On-board computer values from the cluster (IBus); "--" until it answers.
     Row {
         id: middle
-        anchors { left: menuBtn.right; leftMargin: 18; verticalCenter: parent.verticalCenter }
-        spacing: 18
+        anchors { left: menuBtn.right; leftMargin: 12; verticalCenter: parent.verticalCenter }
+        spacing: 12
         component Stat: Row {
             property string label; property string value; property string unit
-            spacing: 5
-            Text { text: parent.label; color: Mk4.dim; font { family: Mk4.font; pixelSize: 15 }
+            spacing: 4
+            Text { text: parent.label; color: Mk4.dim; font { family: Mk4.font; pixelSize: 14 }
                 anchors.baseline: v.baseline }
-            Text { id: v; text: parent.value; color: Mk4.value; font { family: Mk4.font; pixelSize: 21; bold: true } }
+            Text { id: v; text: parent.value; color: Mk4.value; font { family: Mk4.font; pixelSize: 20; bold: true } }
             Text { text: parent.unit; visible: text !== ""; color: Mk4.dim; font { family: Mk4.font; pixelSize: 12 }
                 anchors.baseline: v.baseline }
         }
         Stat { label: "Range"; value: bar.ibus ? bar.ibus.range : ""; unit: bar.ibus ? bar.ibus.distanceUnit : "" }
         Stat { label: "Cons. 1"; value: bar.ibus ? bar.ibus.consumption1 : ""; unit: bar.ibus ? bar.ibus.consumptionUnit : "" }
         Stat { label: "Cons. 2"; value: bar.ibus ? bar.ibus.consumption2 : ""; unit: bar.ibus ? bar.ibus.consumption2Unit : "" }
+        Stat { label: "Temp"; value: bar.ibus ? bar.ibus.outsideTemp : ""; unit: bar.ibus ? bar.ibus.temperatureUnit : "" }
     }
 
     Text {
