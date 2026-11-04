@@ -33,7 +33,8 @@ ExecStartPre=/bin/sh -c 'for i in $(seq 1 240); do nc -z 127.0.0.1 8080 && exit 
 TimeoutStartSec=120
 ExecStart=/usr/bin/crankshaft-ui-slim
 Restart=on-failure
-RestartSec=5
+# Come back quickly after a crash so Android Auto is not blank for long.
+RestartSec=1
 StandardOutput=journal
 StandardError=journal
 EnvironmentFile=-/run/crankshaft/ui-slim-display.env
