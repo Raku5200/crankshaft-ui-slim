@@ -22,7 +22,7 @@ Rectangle {
     readonly property string font: "Inter"
 
     // As thin as stays readable at arm's length on a 6.5" 800x480 panel:
-    // 18 px values, 12 px units. The whole width is the touch target.
+    // 23 px values, 15 px units. The whole width is the touch target.
     height: 36
     color: touch.pressed ? groundPressed : ground
 
@@ -39,7 +39,7 @@ Rectangle {
     // On-board computer values from the cluster (IBus); "--" until it answers.
     Row {
         anchors.centerIn: parent
-        spacing: 20
+        spacing: 18
         component Stat: Row {
             property string iconSource
             property string badge
@@ -47,19 +47,19 @@ Rectangle {
             property string unit
             spacing: 5
             Image { visible: parent.iconSource !== ""; source: parent.iconSource
-                width: 16; height: 16; mipmap: true
+                width: 19; height: 19; mipmap: true
                 anchors.verticalCenter: parent.verticalCenter }
-            Rectangle { visible: parent.badge !== ""; width: 14; height: 16; radius: 3
+            Rectangle { visible: parent.badge !== ""; width: 17; height: 20; radius: 4
                 color: "transparent"; border { width: 1; color: "#3A3F47" }
                 anchors.verticalCenter: parent.verticalCenter
                 Text { anchors.centerIn: parent; text: parent.parent.badge; color: bar.dim
-                    font { family: bar.font; pixelSize: 10; weight: Font.DemiBold } } }
+                    font { family: bar.font; pixelSize: 12; weight: Font.DemiBold } } }
             Text { id: v; text: parent.value; color: bar.text
                 anchors.verticalCenter: parent.verticalCenter
-                font { family: bar.font; pixelSize: 18; weight: Font.DemiBold } }
+                font { family: bar.font; pixelSize: 23; weight: Font.DemiBold } }
             Text { text: parent.unit; visible: text !== ""; color: bar.dim
                 anchors.baseline: v.baseline
-                font { family: bar.font; pixelSize: 12 } }
+                font { family: bar.font; pixelSize: 15 } }
         }
         Stat { iconSource: "qrc:/qml/assets/infobar-range.png"
             value: bar.ibus ? bar.ibus.range : ""; unit: bar.ibus ? bar.ibus.distanceUnit : "" }
