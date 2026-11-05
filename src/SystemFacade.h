@@ -29,7 +29,8 @@
 /**
  * System actions handled by core (system/... topics). Exposed to QML as
  * _system. saveLogs() copies the logs to the SD card's boot partition
- * (crankshaft-logs folder), readable on any PC.
+ * (crankshaft-logs folder), readable on any PC; restartSystem() reboots the
+ * Pi.
  */
 class SystemFacade : public QObject {
     Q_OBJECT
@@ -58,6 +59,13 @@ class SystemFacade : public QObject {
         m_logSaveMessage.clear();
         emit logSaveChanged();
         m_coreClient->publish(QStringLiteral("system/save-logs"), QJsonObject{});
+    }
+
+    /// Restart the whole head unit (core asks systemd-logind to reboot).
+    Q_INVOKABLE void restartSystem() {
+        if (m_coreClient) {
+            m_coreClient->publish(QStringLiteral("system/reboot"), QJsonObject{});
+        }
     }
 
   public slots:

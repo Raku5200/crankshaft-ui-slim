@@ -174,6 +174,46 @@ Item {
                         onClicked: root.system.saveLogs()
                     }
                 }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+                        Label {
+                            Layout.fillWidth: true
+                            text: qsTr("Restart the head unit", "SettingsPanel")
+                            font.pointSize: 11
+                            wrapMode: Text.WordWrap
+                        }
+                        Label {
+                            Layout.fillWidth: true
+                            font.pointSize: 9
+                            opacity: 0.7
+                            wrapMode: Text.WordWrap
+                            text: restartButton.armed
+                                  ? qsTr("Press Restart again to confirm.", "SettingsPanel")
+                                  : qsTr("Reboots the Pi. Android Auto reconnects by itself after about 45 seconds.", "SettingsPanel")
+                        }
+                    }
+                    Button {
+                        id: restartButton
+                        property bool armed: false
+                        text: armed ? qsTr("Confirm", "SettingsPanel") : qsTr("Restart", "SettingsPanel")
+                        enabled: !!root.system
+                        onClicked: {
+                            if (armed) {
+                                armed = false
+                                root.system.restartSystem()
+                            } else {
+                                armed = true
+                                restartDisarm.restart()
+                            }
+                        }
+                        Timer { id: restartDisarm; interval: 4000; onTriggered: restartButton.armed = false }
+                    }
+                }
             }
         }
     }

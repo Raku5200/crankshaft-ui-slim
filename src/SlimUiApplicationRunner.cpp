@@ -57,6 +57,7 @@
 #include "ProjectionInfoFacade.h"
 #include "IbusFacade.h"
 #include "SystemFacade.h"
+#include "CursorAutoHider.h"
 #include "ServiceProvider.h"
 #include "TouchEventForwarder.h"
 
@@ -303,6 +304,10 @@ int runSlimUiApplication(int argc, char* argv[], const QString& version) {
                                      "Audio system initialization failed",
                                      ErrorHandler::Severity::Warning);
         }
+
+        // Touch head unit: keep the mouse pointer out of sight unless a mouse moves.
+        CursorAutoHider cursorAutoHider;
+        qApp->installEventFilter(&cursorAutoHider);
 
         QQmlApplicationEngine engine;
 

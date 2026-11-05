@@ -1368,6 +1368,7 @@ ApplicationWindow {
             z: 20
             ibus: ibusData
             onCloseRequested: visible = false
+            onRestartRequested: if (typeof _system !== "undefined") _system.restartSystem()
             onOpenCrankshaftSettings: {
                 visible = false
                 if (navigationController.canOpenSettings()) {

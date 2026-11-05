@@ -16,6 +16,7 @@ FocusScope {
 
     signal closeRequested()
     signal openCrankshaftSettings()
+    signal restartRequested()
 
     readonly property var current: page === "computer" ? computerPage
                                    : page === "vehicle" ? vehiclePage
@@ -88,6 +89,7 @@ FocusScope {
         onMenuRequested: shell.menuButton()
         onOpenCrankshaftSettings: shell.openCrankshaftSettings()
         onMonitorOff: shell.monitorOff = true
+        onRestartRequested: shell.restartRequested()
     }
 
     Rectangle {
