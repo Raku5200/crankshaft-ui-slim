@@ -21,7 +21,9 @@ Rectangle {
     readonly property color dim: "#A6ADB7"
     readonly property string font: "Inter"
 
-    height: 56
+    // As thin as stays readable at arm's length on a 6.5" 800x480 panel:
+    // 18 px values, 12 px units. The whole width is the touch target.
+    height: 36
     color: touch.pressed ? groundPressed : ground
 
     // The whole bar is the menu button; touches never fall through to
@@ -37,27 +39,27 @@ Rectangle {
     // On-board computer values from the cluster (IBus); "--" until it answers.
     Row {
         anchors.centerIn: parent
-        spacing: 22
+        spacing: 20
         component Stat: Row {
             property string iconSource
             property string badge
             property string value
             property string unit
-            spacing: 6
+            spacing: 5
             Image { visible: parent.iconSource !== ""; source: parent.iconSource
-                width: 18; height: 18; mipmap: true
+                width: 16; height: 16; mipmap: true
                 anchors.verticalCenter: parent.verticalCenter }
-            Rectangle { visible: parent.badge !== ""; width: 16; height: 18; radius: 4
+            Rectangle { visible: parent.badge !== ""; width: 14; height: 16; radius: 3
                 color: "transparent"; border { width: 1; color: "#3A3F47" }
                 anchors.verticalCenter: parent.verticalCenter
                 Text { anchors.centerIn: parent; text: parent.parent.badge; color: bar.dim
-                    font { family: bar.font; pixelSize: 11; weight: Font.DemiBold } } }
+                    font { family: bar.font; pixelSize: 10; weight: Font.DemiBold } } }
             Text { id: v; text: parent.value; color: bar.text
                 anchors.verticalCenter: parent.verticalCenter
-                font { family: bar.font; pixelSize: 20; weight: Font.DemiBold } }
+                font { family: bar.font; pixelSize: 18; weight: Font.DemiBold } }
             Text { text: parent.unit; visible: text !== ""; color: bar.dim
                 anchors.baseline: v.baseline
-                font { family: bar.font; pixelSize: 13 } }
+                font { family: bar.font; pixelSize: 12 } }
         }
         Stat { iconSource: "qrc:/qml/assets/infobar-range.png"
             value: bar.ibus ? bar.ibus.range : ""; unit: bar.ibus ? bar.ibus.distanceUnit : "" }
@@ -72,7 +74,7 @@ Rectangle {
     }
 
     Text {
-        anchors { right: parent.right; rightMargin: 10; top: parent.top; topMargin: 3 }
+        anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
         visible: !!bar.ibus && bar.ibus.demo
         text: "DEMO"; color: bar.dim
         font { family: bar.font; pixelSize: 9; weight: Font.DemiBold; letterSpacing: 1 }
